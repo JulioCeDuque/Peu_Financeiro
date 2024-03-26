@@ -48,7 +48,6 @@ def cadastro(request):
 
 def login(request):
     if request.method == "GET":
-        # Verificar se o usuário já está autenticado
         if request.user.is_authenticated:
             return HttpResponseRedirect('/plataforma')
         return render(request, 'internos/login.html')
@@ -64,7 +63,6 @@ def login(request):
             return HttpResponseRedirect('/plataforma')
         else:
             messages.error(request, 'Nome de usuário ou senha incorretos.')
-            # Redirecionar de volta para a mesma página
             return redirect('/')
 
 #####################################################################################################################
@@ -77,49 +75,38 @@ def plataforma(request):
         data_fim = request.POST.get('data_fim')
 
         try:
-                # Convertendo strings em objetos de data
+
             data_inicio = datetime.strptime(data_inicio, '%Y-%m-%d').date()
             data_fim = datetime.strptime(data_fim, '%Y-%m-%d').date()
 
-                # Consulta ao banco de dados para calcular o total dentro do intervalo de datas especificado
+                
             total_valor = CadastroFinanceiro.objects.filter(data_pagamento__range=[data_inicio, data_fim]).aggregate(Sum('valor'))['valor__sum']
 
-                # Retornando a página com o resultado da consulta
+               
             return render(request, 'internos/plataforma.html', {'total_valor': total_valor})
 
         except ValueError:
-                # Tratamento de erro se as datas não forem válidas
+                
             return render(request, 'internos/plataforma.html', {'error_message': 'Formato de data inválido. Use o formato AAAA-MM-DD.'})
 
     return render(request, 'internos/plataforma.html')
-    # usuarios = User.objects.all()
-    # if request.method == 'POST':
-    #     usuario_id = request.POST.get('usuario_id')
-    #     usuario = User.objects.get(pk=usuario_id)
-    #     usuario.delete()
-    #     return HttpResponseRedirect('/plataforma')
-    # return render(request, 'internos/plataforma.html', {'usuarios': usuarios})
     
 def dados_do_grafico(request):
     if request.user.groups.filter(name='ADM').exists():
-        # Se o usuário pertencer ao grupo "ADM", ele pode ver todos os dados
+       
         dados = CadastroFinanceiro.objects.all()
     else:
-        # Caso contrário, ele só pode ver os dados relacionados ao seu grupo
+      
         grupo_do_usuario = request.user.groups.first()
         dados = CadastroFinanceiro.objects.filter(departamento=grupo_do_usuario)
 
-    # Obtém a data e hora local atual
     data_atual = timezone.localtime().date()
 
-    # Calcula o primeiro dia da semana (segunda-feira) e o último dia da semana (domingo) para a semana atual
     primeiro_dia_semana = data_atual - timedelta(days=data_atual.weekday())
     ultimo_dia_semana = primeiro_dia_semana + timedelta(days=6)
 
-    # Filtra os dados do banco de dados para obter apenas os registros com data de pagamento dentro da semana atual
     dados_semana = dados.filter(data_pagamento__range=(primeiro_dia_semana, ultimo_dia_semana)).values('data_pagamento').annotate(total_servicos=Count('id'))
 
-    # Converte os dados para o formato JSON e retorna como uma resposta JSON
     return JsonResponse(list(dados_semana), safe=False)
     
 #####################################################################################################################
@@ -150,21 +137,20 @@ def filtro_datas_departamento(request):
 
 def auth_logout(request):
     logout(request)
-    # Redirecione para a página inicial, por exemplo
     return HttpResponseRedirect('/')
 
 #####################################################################################################################
 
 def verificar_cpf(request):
-    # Verifica se a requisição é do tipo POST e se é uma requisição AJAX
+    
     if request.method == 'POST' and request.is_ajax():
-        # Obtém o CPF enviado na requisição POST
+       
         cpf = request.POST.get('cpf')
-        # Verifica se existe um cliente com o CPF fornecido
+
         if clientes.objects.filter(cpf=cpf).exists():
-            # Se o CPF já existe, retorna um JSON indicando sua existência
+            
             return JsonResponse({'exists': True})
-    # Se o CPF não existe, retorna um JSON indicando sua não existência
+
     return JsonResponse({'exists': False})
 
 #####################################################################################################################
@@ -175,14 +161,13 @@ def cadastro_externo(request):
 
     if request.method == 'POST':
         cpf = request.POST.get('cpf')
-        # Verifica se já existe um cliente com o mesmo CPF
+        
         if clientes.objects.filter(cpf=cpf).exists():
-            # Se o CPF já existir, atribua a mensagem de erro
+            
             mensagem_erro = 'Este CPF já está em uso.'
         else:
-            # Se o CPF não existir, crie um novo cliente
+           
             cliente = clientes()
-            # Preenche os campos do cliente com os dados do formulário
             cliente.cpf = cpf
             cliente.nome = request.POST.get('nome')
             cliente.cep = request.POST.get('cep')
@@ -194,16 +179,13 @@ def cadastro_externo(request):
             cliente.estado = request.POST.get('estado')
             cliente.telefone_principal = request.POST.get('telefone_principal')
             cliente.email = request.POST.get('email')
-            # Salva o novo cliente no banco de dados
             cliente.save()
 
-    # Obtém todos os clientes existentes
     clientes_data = {
         'clientes': clientes.objects.all(),
-        # Adiciona a mensagem de erro ao contexto, para ser exibida no template
         'mensagem_erro': mensagem_erro  
     }
-    # Renderiza a página de cadastro com os dados dos clientes e a mensagem de erro, se houver
+
     return render(request, 'internos/cadastro_externo.html', clientes_data)
 
 #####################################################################################################################
@@ -212,13 +194,12 @@ def cadastro_externo(request):
 def cadastro_financeiro(request):
    if request.method == 'POST':
        cpf = request.POST.get('cpf')
-       # Verifica se o cliente com o CPF fornecido existe
+
        if clientes.objects.filter(cpf=cpf).exists():
            cliente = clientes.objects.get(cpf=cpf)
-           # Cria um novo registro de cadastro financeiro e associa ao cliente
+
            cadastro = CadastroFinanceiro()
            cadastro.cliente = cliente
-           # Preenche os campos do cadastro financeiro com os dados do formulário
            cadastro.cpf = request.POST.get('cpf')
            cadastro.valor = request.POST.get('valor')
            cadastro.data_pagamento = request.POST.get('data_pagamento')
@@ -227,10 +208,10 @@ def cadastro_financeiro(request):
            cadastro.departamento = request.POST.get('departamento')
            cadastro.descricao = request.POST.get('descricao')
            cadastro.save()
-           # Redireciona para uma página de sucesso ou faça o que for necessário
+
        else:
            return HttpResponse('Cliente não encontrado.')
-   # Se o método da requisição não for POST, apenas renderize o template
+       
    return render(request, 'internos/cadastro_financeiro.html')
 
 #####################################################################################################################
@@ -260,7 +241,7 @@ def lista_usuarios(request):
 
     if not user_belongs_to_group:
         messages.error(request, "Você não tem permissão para acessar a página Usuarios.")
-        return redirect('plataforma')  # Substitua 'nome_da_view' pelo nome da view que renderiza a página
+        return redirect('plataforma')
 
     usuarios = User.objects.all()
 
@@ -334,17 +315,19 @@ def send_password_reset_email(request, usuario):
 @login_required(login_url=('/'))
 def teste_cliente(request):
     if request.user.groups.filter(name='ADM').exists() | request.user.groups.filter(name='Secretaria').exists():
-        # Se o usuário pertencer ao grupo "ADM", ele pode ver todos os serviços
+    
         projeto = {
             'projeto': CadastroFinanceiro.objects.all()
         }
+
     else:
-        # Caso contrário, ele só pode ver os serviços relacionados aos grupos aos quais pertence
+
         grupos_do_usuario = request.user.groups.all()
         departamentos_do_usuario = [grupo.name for grupo in grupos_do_usuario]
         projeto = {
             'projeto': CadastroFinanceiro.objects.filter(departamento__in=departamentos_do_usuario)
         }
+
     return render(request, 'internos/teste_cliente.html', projeto)
 
 #####################################################################################################################
@@ -357,7 +340,9 @@ def informacoes_gerais(request, id):
 
         cliente = clientes.objects.filter(cpf=servico.cpf)
         return render(request, 'internos/descricao.html', {'servico': servico, 'cliente': cliente})
+    
     else:
+
         return HttpResponse("Você não tem permissão para visualizar estas informações.")
     
 #####################################################################################################################
@@ -365,30 +350,30 @@ def informacoes_gerais(request, id):
 @login_required(login_url=('/'))
 def exportar_dados(request):
     if request.method == 'POST' and 'action' in request.POST:
+
         if request.POST['action'] == 'exportar':
+
             data_inicio = request.POST.get('data_inicio')
             data_fim = request.POST.get('data_fim')
 
-            # Convertendo datas de string para objetos datetime
             data_inicio = datetime.strptime(data_inicio, '%Y-%m-%d')
             data_fim = datetime.strptime(data_fim, '%Y-%m-%d')
 
             if request.user.groups.filter(name='ADM').exists() | request.user.groups.filter(name='Secretaria').exists():
-                # Se o usuário pertencer ao grupo "ADM", ele pode ver todos os serviços
+
                 dados_filtrados = CadastroFinanceiro.objects.filter(data_pagamento__range=(data_inicio, data_fim))
+
             else:
-                # Caso contrário, ele só pode ver os serviços relacionados ao seu grupo
+
                 grupos_do_usuario = request.user.groups.all()
                 departamentos_do_usuario = [grupo.name for grupo in grupos_do_usuario]
                 dados_filtrados = CadastroFinanceiro.objects.filter(data_pagamento__range=(data_inicio, data_fim), departamento__in=departamentos_do_usuario)
 
-            # Construindo o conteúdo do arquivo CSV
             csv_content = "CPF,Nome,CEP,Endereço,Número,Complemento,Bairro,Cidade,Estado,Telefone principal,E-mail,Valor,Data Pagamento,Forma Pagamento,Chave Segurança,Departamento\n"
             for dado in dados_filtrados:
                 cliente = clientes.objects.get(cpf=dado.cpf)
                 csv_content += f"{cliente.cpf},{cliente.nome},{cliente.cep},{cliente.endereco},{cliente.numero},{cliente.complemento},{cliente.bairro},{cliente.cidade},{cliente.estado},{cliente.telefone_principal},{cliente.email},{dado.valor},{dado.data_pagamento},{dado.forma_pagamento},{dado.chave_seguranca},{dado.departamento}\n"
 
-            # Criando a resposta HTTP com o conteúdo CSV
             response = HttpResponse(content_type='text/csv')
             response['Content-Disposition'] = 'attachment; filename="dados_exportados.csv"'
             response.write(csv_content)
