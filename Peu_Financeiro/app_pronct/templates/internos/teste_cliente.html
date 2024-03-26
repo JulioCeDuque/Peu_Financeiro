@@ -1,0 +1,296 @@
+{% extends "blocos/sideb.html" %}
+
+{% block content %}
+{% load static %}
+
+<link rel="stylesheet" href="{% static 'sideBar/style.css' %}">
+<style>
+    h2,
+    th {
+        font-weight: normal;
+        text-align: center;
+    }
+    body {
+        background-color: #e4e9f7;
+        font-family: Arial, sans-serif;
+    }
+
+    .container {
+        width: 110%; 
+        height: 500px; 
+        overflow: auto; 
+        border: 1px solid #ccc; 
+        background-color: #fff;
+        
+    }
+
+    .content {
+        width: 100%;
+
+    }
+
+    .pagination {
+        width: 110%;
+        padding: 10px;
+        display: flex;
+        justify-content: center;
+        background-color: #f2f2f2;
+    }
+
+    .pagination a {
+        text-decoration: none;
+        padding: 8px 12px;
+        margin: 0 5px;
+        background-color: #35adb5;
+        color: #fff;
+        border-radius: 5px;
+        transition: background-color 0.3s;
+    }
+
+    .pagination a:hover {
+        background-color: #35adb5;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    th, td {
+        padding: 10px;
+        text-align: center;
+        border-bottom: 1px solid #ddd;
+        min-width: 100px;
+    }
+
+    th {
+        background-color: #f2f2f2;
+    }
+
+    .expandido {
+        min-width: 150px;
+    }
+
+    .rounded-input {
+        border-radius: 5px;
+        padding: 8px;
+        border: 1px solid #ccc;
+        margin-bottom: 10px;
+        width: 110%;
+    }
+    .rounded-inputt {
+        border-radius: 5px;
+        padding: 8px;
+        border: 1px solid #ccc;
+        margin-bottom: 10px;
+        width: 15%;
+    }
+
+    button {
+        padding: 8px 12px;
+        border: none;
+        background-color: #007bff;
+        color: #fff;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: background-color 0.3s;
+    }
+
+    button {
+        background-color: #35adb5;
+    }
+    .form-container {
+        margin-bottom: 20px;
+        text-align: center;
+        
+        
+    }
+
+    .form-container form {
+        display: inline-block;
+        
+    }
+
+</style>
+
+<h2>Informações Clientes</h2>
+    <!-- Contêiner do formulário -->
+    <div class="form-container">
+        <form method="post" action="{% url 'exportar_dados' %}">
+            {% csrf_token %}
+            <label for="data_inicio">Data Início Periodo Pagamento:</label>
+            <input type="date" id="data_inicio" name="data_inicio" class="rounded-inputt">
+        
+            <label for="data_fim">Data Término Periodo Pagamento:</label>
+            <input type="date" id="data_fim" name="data_fim" class="rounded-inputt">
+        
+            <!-- Adicionar Botão de Exportação -->
+            <button type="submit" name="action" value="exportar">Exportar Dados</button>
+        </form>
+    </div>
+    <input type="text" id="searchInput" placeholder="Pesquisar Cliente" class="rounded-input">
+<div class="container">
+    <div class="content">
+        <table id="dataTable">
+            <tr>
+                <th onclick="sortTable(0)">Data Pagamento</th>
+                <th onclick="sortTable(1)">CPF</th>
+                <th onclick="sortTable(2)">Valor</th>
+                <th onclick="sortTable(3)">Forma de Pagamento</th>
+                <th onclick="sortTable(4)">Projeto</th>
+                <th>Decrições Detalhadas</th>
+            </tr>
+            {% for projetos in projeto %}
+            <tr>
+                <td>{{ projetos.data_pagamento|date:"d/m/Y" }}</td>
+                <td class="expandido">{{ projetos.cpf }}</td>
+                <td class="expandido">R$ {{ projetos.valor }}</td>
+                <td>{{ projetos.forma_pagamento }}</td>
+                <td>{{ projetos.departamento }}</td>
+                <td><form action="{% url 'informacoes_gerais' projetos.id %}" method="get">
+                    {% csrf_token %}
+                    <button type="submit">Ver Descrições</button>
+                </form></td>
+            </tr>
+            {% endfor %}
+        </table>
+    </div>
+</div>
+<div class="pagination">
+</div>
+
+
+<script>
+// Função de pesquisa por filtro
+function filterTable() {
+    var input, filter, table, tr, td, i, txtValue;
+    input = document.getElementById("searchInput");
+    filter = input.value.toUpperCase();
+    table = document.getElementById("dataTable");
+    tr = table.getElementsByTagName("tr");
+    
+    if (filter.trim() === '') { // Verifica se o filtro está vazio
+        // Se o filtro estiver vazio, limpa o campo de busca e recarrega a paginação
+        input.value = ''; 
+        setupPagination();
+        return;
+    }
+
+    for (i = 0; i < tr.length; i++) {
+        td = tr[i].getElementsByTagName("td");
+        for (var j = 0; j < td.length; j++) {
+            if (td[j]) {
+                txtValue = td[j].textContent || td[j].innerText;
+                if (txtValue.toUpperCase().indexOf(filter) > -1) {
+                    tr[i].style.display = "";
+                    break;
+                } else {
+                    tr[i].style.display = "none";
+                }
+            }
+        }
+    }
+}
+
+document.getElementById("searchInput").addEventListener("keyup", filterTable);
+
+// Função para paginação
+function setupPagination() {
+    var table = document.getElementById("dataTable");
+    var rowsPerPage = 200;  // Nessa linha muda o número de dados por paginação
+    var rows = table.getElementsByTagName("tr");
+    var pageCount = Math.ceil((rows.length - 1) / rowsPerPage); 
+    
+    // Adiciona os botões de páginação
+    var pagination = document.querySelector(".pagination");
+    pagination.innerHTML = "";
+    for (var i = 1; i <= pageCount; i++) {
+        var pageLink = document.createElement("a");
+        pageLink.href = "#";
+        pageLink.textContent = i;
+        pageLink.addEventListener("click", function() {
+            var pageNumber = parseInt(this.textContent);
+            showPage(pageNumber, rowsPerPage, rows);
+        });
+        pagination.appendChild(pageLink);
+    }
+    
+    showPage(1, rowsPerPage, rows);
+}
+
+// Função para exibir corretamente a página atual
+function showPage(pageNumber, rowsPerPage, rows) {
+    var start = (pageNumber - 1) * rowsPerPage + 1; 
+    var end = start + rowsPerPage - 1; 
+    for (var i = 1; i < rows.length; i++) {
+        if (i >= start && i <= end) {
+            rows[i].style.display = "";
+        } else {
+            rows[i].style.display = "none";
+        }
+    }
+}
+
+setupPagination();
+
+function sortTable(columnIndex) {
+        var table, rows, switching, i, x, y, shouldSwitch;
+        table = document.getElementById("dataTable");
+        switching = true;
+        var asc = table.getAttribute('data-sort-order') === 'asc'; // Obtém a ordem atual de classificação
+
+        // Alterna a ordem de classificação
+        asc = !asc;
+        table.setAttribute('data-sort-order', asc ? 'asc' : 'desc');
+
+        while (switching) {
+            switching = false;
+            rows = table.rows;
+
+            for (i = 1; i < (rows.length - 1); i++) {
+                shouldSwitch = false;
+                x = rows[i].getElementsByTagName("td")[columnIndex];
+                y = rows[i + 1].getElementsByTagName("td")[columnIndex];
+
+                // Convertendo o valor para comparar corretamente, especialmente para datas
+                var xValue = x.innerText || x.textContent;
+                var yValue = y.innerText || y.textContent;
+
+                // Se for a coluna da data, converta para um formato que possa ser comparado
+                if (columnIndex === 0) {
+                    var xDate = new Date(xValue.split('/').reverse().join('-'));
+                    var yDate = new Date(yValue.split('/').reverse().join('-'));
+                    if (asc) {
+                        if (xDate > yDate) {
+                            shouldSwitch = true;
+                            break;
+                        }
+                    } else {
+                        if (xDate < yDate) {
+                            shouldSwitch = true;
+                            break;
+                        }
+                    }
+                } else {
+                    if (asc) {
+                        if (xValue.toLowerCase() > yValue.toLowerCase()) {
+                            shouldSwitch = true;
+                            break;
+                        }
+                    } else {
+                        if (xValue.toLowerCase() < yValue.toLowerCase()) {
+                            shouldSwitch = true;
+                            break;
+                        }
+                    }
+                }
+            }
+            if (shouldSwitch) {
+                rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
+                switching = true;
+            }
+        }
+}
+
+</script>
+{% endblock %}

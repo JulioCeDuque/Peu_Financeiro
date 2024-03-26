@@ -1,0 +1,268 @@
+{% extends "blocos\sideb.html" %}
+
+{% block content %}
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cadastro de Clientes PEU Financeiro</title>
+    <style>
+        h2,
+        th {
+            font-weight: normal;
+        }
+        body {
+            background-color: #e4e9f7;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            background-color: #f9f9f9;
+        }
+        .container h2 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+            .form-group label {
+                font-weight: normal; /* Remover o negrito do texto do label */
+                margin-bottom: 5px;
+            }
+        .form-group input[type="text"],
+        .form-group input[type="email"],
+        .form-group input[type="password"],
+        .form-group input[type="date"],
+        .form-group input[type="tel"],
+        .form-group select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        .form-group input[type="submit"] {
+            background-color: #31afb4;
+            color: #fff;
+            border: none;
+            padding: 15px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            width: 100%;
+            font-size: 16px;
+        }
+        .form-group input[type="submit"]:hover {
+            background-color: #0056b3;
+        }
+        .rounded-input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 10px; /* Ajuste o valor conforme necessário */
+            box-sizing: border-box;
+        }
+        
+        .success-box {
+            text-align: center;
+            padding-bottom: 15px;
+        }
+
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Cadastro de Clientes</h2>
+        <form action="#" method="POST" id="cadastroForm"> 
+            {% csrf_token %}
+            {% if mensagem_erro %}
+            <div class="alert alert-danger">
+                {{ mensagem_erro }}
+            </div>
+            {% endif %}
+            <div class="success-box" style="display: none;" id="successMessage">
+                Cadastro efetuado com sucesso!
+            </div>
+            <div class="form-group">
+                <label for="nome">Nome:</label>
+                <input type="text" id="nome" name="nome" placeholder="Nome" required>
+            </div>
+            <!-- <div class="form-group">
+                <label for="nome_social">Nome Social:</label>
+                <input type="text" id="nome_social" name="nome_social" placeholder="Nome Social" required>
+            </div> -->
+            <!-- <div class="form-group">
+                <label for="data_nascimento">Data de Nascimento</label>
+                <input type="date" id="data_nascimento" name="data_nascimento" class="rounded-input" required>
+            </div>     
+            <div class="form-group">
+                <label for="sexo">Sexo:</label>
+                <select id="sexo" name="sexo" required>
+                    <option value="masculino">Masculino</option>
+                    <option value="feminino">Feminino</option>
+                    <option value="outro">Outro</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="genero">Gênero:</label>
+                <select id="genero" name="genero" required>
+                    <option value="masculino">Masculino</option>
+                    <option value="feminino">Feminino</option>
+                    <option value="outro">Outro</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="etnia">Etnia:</label>
+                <input type="text" id="etnia" name="etnia" placeholder="Etnia" required>
+            </div> -->
+            <div class="form-group">
+                <label for="cpf">CPF:</label>
+                <input type="text" id="cpf" name="cpf" placeholder="CPF" pattern="\d{3}\.\d{3}\.\d{3}-\d{2}" title="Digite um CPF válido (000.000.000-00)" required>
+            </div>
+            <!-- <div class="form-group">
+                <label for="estado_civil">Estado Civil:</label>
+                <select id="estado_civil" name="estado_civil" required>
+                    <option value="solteiro">Solteiro</option>
+                    <option value="casado">Casado</option>
+                    <option value="divorciado">Divorciado</option>
+                    <option value="viuvo">Viúvo</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="identidade">Identidade:</label>
+                <input type="text" id="identidade" name="identidade" placeholder="Identidade" required>
+            </div>
+            <div class="form-group">
+                <label for="orgao_expedidor">Orgão Expedidor:</label>
+                <input type="text" id="orgao_expedidor" name="orgao_expedidor" placeholder="Orgão Expedidor" required>
+            </div>
+            <div class="form-group">
+                <label for="nome_mae">Nome da Mãe:</label>
+                <input type="text" id="nome_mae" name="nome_mae" placeholder="Nome da Mãe" required>
+            </div>
+            <div class="form-group">
+                <label for="nome_pai">Nome do Pai:</label>
+                <input type="text" id="nome_pai" name="nome_pai" placeholder="Nome do Pai" required>
+            </div> -->
+            <div class="form-group">
+                <label for="cep">CEP:</label>
+                <input type="text" id="cep" name="cep" placeholder="Usar Padrão (XXXXX-XXX)" pattern="\d{5}-\d{3}" title="Digite um CEP válido (00000-000)" onblur="buscarEndereco()" required>
+            </div>
+            <div class="form-group">
+                <label for="endereco">Endereço:</label>
+                <input type="text" id="endereco" name="endereco" placeholder="Endereço">
+            </div>
+            <div class="form-group">
+                <label for="numero">Número:</label>
+                <input type="text" id="numero" name="numero" placeholder="Número" required>
+            </div>
+            <div class="form-group">
+                <label for="complemento">Complemento:</label>
+                <input type="text" id="complemento" name="complemento" placeholder="Complemento" required>
+            </div>
+            <div class="form-group">
+                <label for="bairro">Bairro:</label>
+                <input type="text" id="bairro" name="bairro" placeholder="Bairro" required>
+            </div>
+            <div class="form-group">
+                <label for="cidade">Cidade:</label>
+                <input type="text" id="cidade" name="cidade" placeholder="Cidade" required>
+            </div>
+            <div class="form-group">
+                <label for="estado">Estado:</label>
+                <input type="text"
+                id="estado" name="estado" placeholder="Estado" required>
+            </div>
+            <div class="form-group">
+                <label for="telefone_principal">Telefone Principal:</label>
+                <input type="tel" id="telefone_principal" name="telefone_principal" placeholder="Telefone Principal" required>
+            </div>
+            <!-- <div class="form-group">
+                <label for="celular">Celular:</label>
+                <input type="tel" id="celular" name="celular" placeholder="Celular" required>
+            </div> -->
+            <div class="form-group">
+                <label for="email">E-mail:</label>
+                <input type="email" id="email" name="email" placeholder="E-mail" required>
+            </div>
+            <div class="form-group">
+                <input type="submit" value="Cadastrar">
+            </div>
+        </form>
+    </div>
+
+    <script>
+        document.getElementById('cpf').addEventListener('change', function() {
+            var cpf = this.value;
+            if (cpf.length === 14) { // Verifica se o CPF está completo
+                fetch('/verificar_cpf/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': '{{ csrf_token }}' // Adicionei o token CSRF aqui
+                    },
+                    body: JSON.stringify({ 'cpf': cpf })
+                })
+                .then(response => {
+                    if (response.ok) {
+                        return response.json();
+                    } else {
+                        throw new Error('Erro ao verificar CPF');
+                    }
+                })
+                .then(data => {
+                    if (data.exists) {
+                        alert('CPF já cadastrado. Por favor, insira outro CPF.');
+                        document.getElementById('cpf').value = ''; // Limpa o campo CPF
+                    }
+                })
+                .catch(error => console.error('Erro:', error));
+            }
+        });
+        function buscarEndereco() {
+            var cep = document.getElementById('cep').value;
+            if (cep.length != 9) {
+                alert('CEP inválido');
+                return;
+            }
+            fetch('https://viacep.com.br/ws/' + cep + '/json/')
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('endereco').value = data.logradouro;
+                document.getElementById('bairro').value = data.bairro;
+                document.getElementById('cidade').value = data.localidade;
+                document.getElementById('estado').value = data.uf;
+            })
+            .catch(error => console.error('Erro ao buscar o CEP:', error));
+        }
+
+         document.getElementById("cadastroForm").addEventListener("submit", function(event) {
+            event.preventDefault();
+            var form = event.target;
+            var formData = new FormData(form);
+            
+            fetch(form.action, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}'
+                }
+            })
+            .then(response => {
+                if (response.ok) {
+                    document.getElementById("successMessage").style.display = "block";
+                    form.reset();
+                }
+            })
+            .catch(error => console.error('Erro ao cadastrar:', error));
+        });
+    </script>
+</body>
+</html>
+{% endblock %}

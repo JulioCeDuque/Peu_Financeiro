@@ -1,0 +1,183 @@
+{% extends "blocos\sideb.html" %}
+
+{% block content %}
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bem-vindo ao PEU Financeiro</title>
+
+    <style>
+        /* Estilos globais */
+        h1 {
+            font-weight: normal;
+        }
+        body {
+            background-color: #e4e9f7;
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* Estilos para o contêiner de boas-vindas */
+        .welcome-container {
+            background-color: #fff;
+            border-radius: 8px;
+            padding: 20px;
+            max-width: 800px;
+            margin: 20px auto;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+    
+        .welcome-message {
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+
+        /* Estilos para o contêiner do formulário */
+        .form-container {
+            background-color: #fff;
+            border-radius: 8px;
+            padding: 20px;
+            max-width: 800px;
+            margin: 20px auto;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        .form-container form {
+            margin-top: 20px;
+        }
+
+        .form-container label {
+            display: inline-block;
+            margin-bottom: 5px;
+            width: 120px; /* largura fixa para manter a consistência */
+            text-align: right; /* alinhar o texto à direita */
+        }
+
+        .form-container input[type="date"] {
+            padding: 8px;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+            margin-bottom: 10px;
+        }
+
+        .form-container button {
+            padding: 10px 20px;
+            border-radius: 4px;
+            background-color: #35adb5;
+            color: white;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .form-container button:hover {
+            background-color: #35adb5;
+        }
+
+        /* Estilos para as mensagens */
+        .messages-container {
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        .messages {
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .messages li {
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 4px;
+            color: #721c24;
+            font-weight: bold;
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+        }
+    </style>
+</head>
+<body>
+    <!-- Contêiner de boas-vindas -->
+    <div class="welcome-container">
+        {% if user.is_authenticated %}
+            <p class="welcome-message">Bem-vindo, {{ user.username }}!</p>
+        {% else %}
+            <p class="welcome-message">Bem-vindo ao PEU Financeiro!</p>
+        {% endif %}
+        <h1>Logado na plataforma PEU Financeiro.</h1>
+    </div>
+
+    <!-- Contêiner do formulário -->
+    <!-- <div class="form-container">
+        <form method="post">
+            {% csrf_token %}
+            <label for="data_inicio">Data início:</label>
+            <input type="date" id="data_inicio" name="data_inicio">
+        
+            <label for="data_fim">Data término:</label>
+            <input type="date" id="data_fim" name="data_fim">
+        
+            <button type="submit">Filtrar</button>
+        </form>
+        
+        {% if total_valor %}
+            <p>Total dentro do intervalo de datas: R$ {{ total_valor }}</p>
+        {% endif %}
+        
+        {% if error_message %}
+            <p>{{ error_message }}</p>
+        {% endif %}
+    </div>
+    <div class="form-container">
+        <form method="post">
+            {% csrf_token %}
+            <label for="data_inicio">Data de início:</label>
+            <input type="date" id="data_inicio" name="data_inicio">
+        
+            <label for="data_fim">Data de término:</label>
+            <input type="date" id="data_fim" name="data_fim">
+        
+            <label for="departamento">Departamento:</label>
+            <select id="departamento" name="departamento">
+                    <option value="Clínica Odontológica">Clínica Odontológica</option>
+                    <option value="Prótese e Materiais Dentários">Prótese e Materiais Dentários</option>
+                    <option value="Odontologia Legal social e preventiva">Odontologia Legal social e preventiva</option>
+                    <option value="Odontopediatria">Odontopediatria</option>
+                    <option value="Ortodontia">Ortodontia</option>
+                    <option value="Patologia e Diagnóstico Oral">Patologia e Diagnóstico Oral</option>
+            </select>
+        
+            <button type="submit">Filtrar</button>
+        </form>
+
+        {% if total_valor %}
+            <p>Total dentro do intervalo de datas: R$ {{ total_valor }}</p>
+        {% endif %}
+        
+        {% if error_message %}
+            <p>{{ error_message }}</p>
+        {% endif %}
+    </div> -->
+
+    <!-- Adicione este bloco para exibir mensagens -->
+    <div class="messages-container">
+        {% if messages %}
+            <ul class="messages">
+                {% for message in messages %}
+                    <li>{{ message }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+    </div>
+    <!-- Fim do bloco para exibir mensagens -->
+
+</body>
+</html>
+
+{% endblock %}

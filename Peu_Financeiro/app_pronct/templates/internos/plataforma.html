@@ -1,0 +1,186 @@
+{% extends "blocos\sideb.html" %}
+
+{% block content %}
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bem-vindo ao PEU Financeiro</title>
+
+    <style>
+        /* Estilos globais */
+        h1 {
+            font-weight: normal;
+        }
+        body {
+            background-color: #e4e9f7;
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* Estilos para o contêiner de boas-vindas */
+        .welcome-container {
+            background-color: #fff;
+            border-radius: 8px;
+            padding: 20px;
+            max-width: 800px;
+            margin: 20px auto;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+    
+        .welcome-message {
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+
+        /* Estilos para o contêiner do gráfico */
+        .chart-container {
+            background-color: #fff;
+            border-radius: 8px;
+            padding: 20px;
+            max-width: 800px;
+            margin: 20px auto;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        /* Estilos para o canvas do gráfico */
+        #financeiroChart {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        /* Estilos para as mensagens */
+        .messages-container {
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        .messages {
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .messages li {
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 4px;
+            color: #721c24;
+            font-weight: bold;
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+        }
+    </style>
+
+</head>
+<body>
+    <!-- Contêiner de boas-vindas -->
+    <div class="welcome-container">
+        {% if user.is_authenticated %}
+            <p class="welcome-message">Bem-vindo, {{ user.username }}!</p>
+        {% else %}
+            <p class="welcome-message">Bem-vindo ao PEU Financeiro!</p>
+        {% endif %}
+        <h1>Logado na plataforma PEU Financeiro.</h1>
+    </div>
+
+
+    <!-- Adicione este bloco para exibir mensagens -->
+    <div class="messages-container">
+        {% if messages %}
+            <ul class="messages">
+                {% for message in messages %}
+                    <li>{{ message }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+    </div>
+    <!-- Fim do bloco para exibir mensagens -->
+
+<!-- Canvas do gráfico -->
+<div class="chart-container">
+    <canvas id="financeiroChart" style="width: 800px; height: 400px;"></canvas>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
+<script>
+    moment.locale('pt-br'); // Configura o idioma para português brasileiro
+</script>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        fetch('{% url 'dados_do_grafico' %}')
+        .then(response => response.json())
+        .then(dados_json => {
+            // Inicializa um objeto para armazenar os totais de serviços por dia da semana
+            var totalPorDiaSemana = {
+                'Segunda-feira': 0,
+                'Terça-feira': 0,
+                'Quarta-feira': 0,
+                'Quinta-feira': 0,
+                'Sexta-feira': 0,
+                'Sábado': 0
+            };
+
+            // Processa os dados para calcular os totais de serviços por dia da semana
+            dados_json.forEach(function(item) {
+                // Obtém o dia da semana a partir da data
+                var data = new Date(item.data_pagamento);
+                var diaSemana = ['Segunda-feira', 'Terça-feira', 'Quarta-feira', 'Quinta-feira', 'Sexta-feira', 'Sábado'][data.getDay()];
+
+                // Adiciona o total de serviços ao dia da semana correspondente
+                totalPorDiaSemana[diaSemana] += item.total_servicos;
+            });
+
+            // Obtém as chaves (dias da semana) e os valores (totais de serviços) do objeto totalPorDiaSemana
+            var labels = Object.keys(totalPorDiaSemana);
+            var data = Object.values(totalPorDiaSemana);
+
+            // Get the canvas element
+            var ctx = document.getElementById('financeiroChart').getContext('2d');
+
+            // Define os dados do gráfico
+            var chartData = {
+                labels: labels,
+                datasets: [{
+                    label: 'Total de Serviços Cadastrados por Dia',
+                    backgroundColor: 'rgba(53, 173, 181, 0.5)', // Cor de fundo
+                    borderColor: 'rgb(53, 173, 181)', // Cor da borda
+                    borderWidth: 1,
+                    data: data
+                }]
+            };
+
+            // Configura as opções do gráfico
+            var options = {
+                scales: {
+                    yAxes: [{
+                        ticks: {
+                            beginAtZero: true
+                        }
+                    }]
+                }
+            };
+
+            // Cria o gráfico
+            var myChart = new Chart(ctx, {
+                type: 'bar',
+                data: chartData,
+                options: options
+            });
+        })
+        .catch(error => console.error('Erro ao obter os dados do gráfico:', error));
+    });
+</script>
+
+    
+    
+
+</body>
+</html>
+
+{% endblock %}

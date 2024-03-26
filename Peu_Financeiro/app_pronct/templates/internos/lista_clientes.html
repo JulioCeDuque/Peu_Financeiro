@@ -1,0 +1,108 @@
+{% extends "blocos\sideb.html" %}
+{% block content %}
+{% load static %}
+<link rel="stylesheet" href="{% static 'sideBar/style.css' %}">
+<style>
+    h2,
+    th {
+        font-weight: normal;
+    }
+    body {
+        background-color: #e4e9f7;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 20px; /* Espaçamento acima da tabela */
+    }
+
+    th, td {
+        padding: 8px;
+        text-align: center;
+        border-bottom: 1px solid #ddd;
+        min-width: 100px; /* Largura mínima das células */
+        white-space: nowrap; /* Impede que o texto seja quebrado em várias linhas */
+        overflow: hidden; /* Oculta o conteúdo que não cabe na célula */
+        text-overflow: ellipsis; /* Adiciona reticências (...) ao texto que não cabe */
+    }
+
+    th {
+        background-color: #f2f2f2;
+    }
+
+    td {
+        background-color: #fff;
+    }
+
+    .expandido {
+        min-width: 150px; /* Largura mínima expandida para CPF e CEP */
+    }
+</style>
+
+<h2>Informações Clientes</h2>
+<input type="text" id="searchInput" placeholder="Pesquisar Cliente" class="rounded-input">
+
+<div>
+    <table id="dataTable">
+        <tr>
+            <th>Nome Cliente</th>
+            <th>CPF</th>
+            <th>CEP</th>
+            <th>Endereço/Numero/Complemento/Bairro/Cidade/Estado</th>
+            <!--<th>Numero</th>
+            <th>Complemento</th>
+            <th>Bairro</th>
+            <th>Cidade</th>
+            <th>Estado</th>-->
+            <th>Telefone Principal</th>
+            <th>E-mail</th>
+            <th>Editar Cliente</th>
+            <th>Lista de Serviços</th>
+        </tr>
+        {% for clientes in cliente %}
+        <tr>
+            <td>{{ clientes.nome }}</td>
+            <td class="expandido">{{ clientes.cpf }}</td>
+            <td class="expandido">{{ clientes.cep }}</td>
+            <td>{{ clientes.endereco }}, Nº {{ clientes.numero }}, {{ clientes.complemento }}, {{ clientes.bairro }}, {{ clientes.cidade }}, {{ clientes.estado }}.</td>
+            <td>{{ clientes.telefone_principal }}</td>
+            <td>{{ clientes.email }}</td>
+            <td><button>Editar</button></td>
+            <td><form action="{% url 'servicos_cliente' clientes.cpf %}" method="get">
+                {% csrf_token %}
+                <button type="submit">Ver Serviços Contratados</button>
+            </form></td>
+        </tr>
+        {% endfor %}
+    </table>
+</div>
+
+<script>
+    // Função para filtrar os resultados da tabela com base no texto digitado
+    function filterTable() {
+        var input, filter, table, tr, td, i, txtValue;
+        input = document.getElementById("searchInput");
+        filter = input.value.toUpperCase();
+        table = document.getElementById("dataTable");
+        tr = table.getElementsByTagName("tr");
+        for (i = 0; i < tr.length; i++) {
+            td = tr[i].getElementsByTagName("td");
+            for (var j = 0; j < td.length; j++) {
+                if (td[j]) {
+                    txtValue = td[j].textContent || td[j].innerText;
+                    if (txtValue.toUpperCase().indexOf(filter) > -1) {
+                        tr[i].style.display = "";
+                        break;
+                    } else {
+                        tr[i].style.display = "none";
+                    }
+                }
+            }
+        }
+    }
+
+    // Adiciona um ouvinte de eventos ao campo de entrada para chamar a função de filtro quando o texto é alterado
+    document.getElementById("searchInput").addEventListener("keyup", filterTable);
+</script>
+{% endblock %}

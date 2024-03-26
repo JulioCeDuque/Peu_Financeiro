@@ -1,0 +1,103 @@
+{% extends "blocos\sideb.html" %}
+
+{% block content %}
+{% load static %}
+<link rel="stylesheet" href="{% static 'sideBar/style.css' %}">
+<title>Cadastro de Usuarios PEU Financeiro</title>
+<style>
+    h2,
+    th {
+        font-weight: normal;
+    }
+    body {
+        background-color: #e4e9f7;
+    }
+.container {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 20px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    background-color: #f9f9f9;
+}
+.container h2 {
+    text-align: center;
+    margin-bottom: 20px;
+}
+input[type="text"],
+input[type="email"],
+input[type="password"] {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 15px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box;
+}
+input[type="submit"] {
+    background-color: #31afb4;
+    color: #fff;
+    border: none;
+    padding: 15px 20px;
+    border-radius: 4px;
+    cursor: pointer;
+    width: 100%;
+    font-size: 16px;
+}
+input[type="submit"]:hover {
+    background-color: #0056b3;
+}
+.logo {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.logo img {
+    width: 150px;
+    height: auto;
+}
+.success-box {
+    background-color: #d4edda;
+    color: #155724;
+    padding: 10px;
+    border-radius: 4px;
+    margin-top: 10px;
+}
+</style>
+<div class="container">
+    <h2>Cadastro de Usuário</h2>
+    <form id="cadastroForm" method="POST"> 
+        {% csrf_token %}
+        <div class="success-box" style="display: none;" id="successMessage">
+            Cadastro efetuado com sucesso!
+        </div>
+        <input type="text" name="username" placeholder="Nome de Usuário"><br>
+        <input type="email" name="email" placeholder="Email"><br>
+        <input type="password" name="senha" placeholder="Senha"><br>
+        <input type="submit" value="Cadastrar">
+    </form>
+</div>
+
+<script>
+document.getElementById("cadastroForm").addEventListener("submit", function(event) {
+    event.preventDefault();
+    var form = event.target;
+    var formData = new FormData(form);
+    
+    fetch(form.action, {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-CSRFToken': '{{ csrf_token }}'
+        }
+    })
+    .then(response => {
+        if (response.ok) {
+            document.getElementById("successMessage").style.display = "block";
+            form.reset();
+        }
+    })
+    .catch(error => console.error('Erro ao cadastrar:', error));
+});
+</script>
+{% endblock %}

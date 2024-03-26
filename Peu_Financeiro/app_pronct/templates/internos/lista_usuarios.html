@@ -1,0 +1,147 @@
+{% extends "blocos\sideb.html" %}
+
+{% block content %}
+{% load static %}
+<link rel="stylesheet" href="{% static 'sideBar/style.css' %}">
+<title>Lista de Usuários - PEU Financeiro</title>
+<style>
+    h2,
+    th {
+        font-weight: normal;
+    }
+
+    body {
+        font-family: Arial, sans-serif;
+        background-color: #f4f4f4;
+        margin: 0;
+        padding: 0;
+    }
+
+    .container {
+        max-width: 1400px;
+        margin: 20px auto;
+        padding: 20px;
+        border-radius: 8px;
+        background-color: #fff;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+
+    h2 {
+        text-align: center;
+        color: #333;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    th,
+    td {
+        padding: 12px;
+        text-align: left;
+        border-bottom: 1px solid #ddd;
+    }
+
+    th {
+        background-color: #f2f2f2;
+        color: #333;
+    }
+
+    td {
+        background-color: #fff;
+        color: #555;
+    }
+
+    .group-list {
+        list-style-type: none;
+        padding: 0;
+    }
+
+    .group-list li {
+        margin-bottom: 5px;
+        color: #888;
+    }
+
+    .styled-button {
+        background-color: #31afb4;
+        color: #fff;
+        border: none;
+        border-radius: 4px;
+        padding: 8px 16px;
+        cursor: pointer;
+        transition: background-color 0.3s;
+    }
+
+    .styled-button:hover {
+        background-color: #0056b3;
+    }
+
+    .rounded-input {
+        width: 100%;
+        padding: 8px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        box-sizing: border-box;
+        margin-bottom: 10px;
+        color: #555;
+    }
+</style>
+
+<div class="container">
+    <h2>Lista de Usuários</h2>
+    <table>
+        <tr>
+            <th>Nome de Usuário</th>
+            <th>Trocar Senha</th>
+            <th>Remover</th>
+            <th>Grupos</th>
+            <th>Selecionar Grupo</th>
+            <th>Adicionar ao Grupo</th>
+            <th>Remover do Grupo</th>
+        </tr>
+        {% for usuario in usuarios %}
+        <tr>
+            <td>{{ usuario.username }}</td>
+            <td>
+                <form method="post" action="{% url 'lista_usuarios' %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="reset_password">
+                    <input type="hidden" name="usuario_id" value="{{ usuario.id }}">
+                    <button type="submit" class="styled-button">Redefinir Senha</button>
+                </form>
+            </td>
+            <td>
+                <form method="post" action="{% url 'lista_usuarios' %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="usuario_id" value="{{ usuario.id }}">
+                    <button type="submit" name="action" value="delete_usuario" class="styled-button">Remover</button>
+                </form>
+            </td>
+            <td>
+                <ul class="group-list">
+                    {% for group in usuario.groups.all %}
+                    <li>{{ group.name }}</li>
+                    {% endfor %}
+                </ul>
+            </td>
+            <td>
+                <form method="post">
+                    {% csrf_token %}
+                    <input type="hidden" name="usuario_id" value="{{ usuario.id }}">
+                    <select name="group" class="rounded-input">
+                        {% for group in groups %}
+                        <option value="{{ group.id }}">{{ group.name }}</option>
+                        {% endfor %}
+                    </select>
+            </td>
+            <td><button type="submit" name="action" value="change_group" class="styled-button">Adicionar</button></td>
+            <td><button type="submit" name="action" value="delete" class="styled-button">Remover</button></td>
+            </form>
+            </td>
+        </tr>
+
+        {% endfor %}
+    </table>
+</div>
+{% endblock %}

@@ -1,0 +1,89 @@
+{% extends "blocos\sideb.html" %}
+{% block content %}
+{% load static %}
+
+<style>
+    h2,
+    th {
+        font-weight: normal;
+    }
+
+    body {
+        font-family: Arial, sans-serif;
+        background-color: #f4f4f4;
+        margin: 0;
+        padding: 0;
+    }
+
+    .container {
+        max-width: 1200px;
+        margin: 20px auto;
+        padding: 20px;
+        border-radius: 8px;
+        background-color: #fff;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+
+    h2 {
+        text-align: center;
+        color: #333;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    th,
+    td {
+        padding: 12px;
+        text-align: left;
+        border-bottom: 1px solid #ddd;
+    }
+
+    th {
+        background-color: #f2f2f2;
+        color: #333;
+    }
+
+    td {
+        background-color: #fff;
+        color: #555;
+    }
+
+    .rounded-input {
+        width: 100%;
+        padding: 8px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        box-sizing: border-box;
+        margin-bottom: 10px;
+        color: #555;
+    }
+</style>
+
+<div class="container">
+    <h2>Dados Gerais de {{ cliente.nome }} | CPF: {{ cliente.cpf }}</h2>
+
+    <table id="tabela-servicos">
+        <tr>
+            <th>CEP</th>
+            <th>Endereço/Numero/Complemento/Bairro/Cidade/Estado,Telefone Principal</th>
+            <th>E-mail</th>
+            <th>Chave de Segurança</th>
+            <th>Infromaçoes Complementares</th>
+        </tr>
+        {% for servico in servicos %}
+        <tr class="dado-servico">
+            <td>{{ servico.departamento }}</td>
+            <td>{{ servico.valor }}</td>
+            <td>{{ servico.data_pagamento|date:"d/m/Y" }}</td>
+            <td>{{ servico.forma_pagamento }}</td>
+            <td>{{ servico.chave_seguranca }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+</div>
+
+
+{% endblock %} 

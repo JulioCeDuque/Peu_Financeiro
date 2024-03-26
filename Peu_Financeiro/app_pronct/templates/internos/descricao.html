@@ -1,0 +1,150 @@
+{% extends "blocos\sideb.html" %}
+{% block content %}
+{% load static %}
+
+<style>
+    h2,
+    th {
+        font-weight: normal;
+        text-align: center;
+    }
+
+    body {
+        font-family: Arial, sans-serif;
+        background-color: #f4f4f4;
+        margin: 0;
+        padding: 0;
+    }
+
+    .container {
+        max-width: 1200px;
+        margin: 20px auto;
+        padding: 20px;
+        border-radius: 8px;
+        background-color: #fff;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+
+    h2 {
+        text-align: center;
+        color: #333;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    th,
+    td {
+        padding: 12px;
+        text-align: left;
+        border-bottom: 1px solid #ddd;
+    }
+
+    th {
+        background-color: #f2f2f2;
+        color: #333;
+    }
+
+    td {
+        background-color: #fff;
+        color: #555;
+    }
+
+    h6 {
+        font-weight: normal;
+    }
+
+    .rounded-input {
+        width: 100%;
+        padding: 8px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        box-sizing: border-box;
+        margin-bottom: 10px;
+        color: #555;
+    }
+
+    button {
+        padding: 8px 12px;
+        border: none;
+        background-color: #35adb5;
+        color: #fff;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: background-color 0.3s;
+    }
+
+    button:hover {
+        background-color: #007bff;
+    }
+
+    .h6-container {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-between;
+    }
+
+    .h6-item {
+        font-weight: normal;
+        font-size: 19px;
+        padding-top: 20px;
+        flex: 0 0 calc(50% - 10px);
+        margin-bottom: 10px;
+    }
+
+    .service_h2 {
+        padding-top: 20px;
+    }
+
+    .service-description-box {
+        background-color: #f2f2f2;
+        padding: 10px;
+        border-radius: 5px;
+        margin-top: 10px;
+    }
+</style>
+
+{% for clientes in cliente %}
+<div class="container">
+    <div style="display: flex; align-items: center; justify-content: space-between;">
+        <h2>Dados Gerais de {{ clientes.nome }}</h2>
+        <form action="{% url 'teste_cliente' %}" style="margin-bottom: 0;"> 
+            {% csrf_token %}
+            <button type="submit">Voltar</button>
+        </form>
+    </div>
+
+    <div class="h6-container">
+        <div class="h6-item"><h6>Nome Completo: {{ clientes.nome }}</h6></div>
+        <div class="h6-item"><h6>CPF: {{ clientes.cpf }}</h6></div>
+        <div class="h6-item"><h6>CEP: {{ clientes.cep }}</h6></div>
+        <div class="h6-item"><h6>Logradouro: {{ clientes.endereco }}</h6></div>
+        <div class="h6-item"><h6>Número: {{ clientes.numero }}</h6></div>
+        <div class="h6-item"><h6>Complemento: {{ clientes.complemento }}</h6></div>
+        <div class="h6-item"><h6>Bairro: {{ clientes.bairro }}</h6></div>
+        <div class="h6-item"><h6>Cidade: {{ clientes.cidade }} - {{ clientes.estado }}</h6></div>
+        <div class="h6-item"><h6>Email: {{ clientes.email }}</h6></div>
+        <div class="h6-item"><h6>Telefone: {{ clientes.telefone_principal }}</h6></div>
+    </div>
+
+    <h6 class="h6-item">Chave de serviço: {{ servico.chave_seguranca }}</h6>
+
+
+    <div style="display: flex; align-items: center; justify-content: space-between;">
+        <h2 class="service_h2">Descrição do serviço:</h2>
+    </div>
+    <div class="service-description-box">
+        {% if servico.descricao %}
+            <p>{{ servico.descricao }}</p>
+        {% else %}
+            <p>Esse serviço não tem descrição.</p>
+        {% endif %}
+    </div>
+    
+
+</div>
+{% endfor %}
+
+{% endblock %}
