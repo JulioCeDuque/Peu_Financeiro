@@ -288,9 +288,14 @@ def lista_usuarios(request):
         
         elif action == 'delete_usuario':
 
-            usuario = User.objects.get(pk=usuario_id)
-            usuario.delete()
-            return HttpResponseRedirect('/lista_usuarios')
+            if request.user.is_superuser:
+                usuario = User.objects.get(pk=usuario_id)
+                usuario.delete()
+                return HttpResponseRedirect('/lista_usuarios')
+            else:
+                messages.error(request, "Você não tem permissão para excluir usuários.")
+                return HttpResponseRedirect('/lista_usuarios')
+
         
         elif action == 'reset_password':
 
