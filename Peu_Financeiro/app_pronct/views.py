@@ -49,7 +49,7 @@ def cadastro(request):
 def login(request):
     if request.method == "GET":
         if request.user.is_authenticated:
-            return HttpResponseRedirect('/plataforma')
+            return HttpResponseRedirect('/home')
         return render(request, 'internos/login.html')
     else:
         username = request.POST.get('username')
@@ -60,7 +60,7 @@ def login(request):
         if user:
             login_django(request, user)
             
-            return HttpResponseRedirect('/plataforma')
+            return HttpResponseRedirect('/home')
         else:
             messages.error(request, 'Nome de usuário ou senha incorretos.')
             return redirect('/')
@@ -241,7 +241,7 @@ def lista_usuarios(request):
 
     if not user_belongs_to_group:
         messages.error(request, "Você não tem permissão para acessar a página Usuarios.")
-        return redirect('plataforma')
+        return redirect('home')
 
     usuarios = User.objects.all()
 
@@ -256,7 +256,7 @@ def lista_usuarios(request):
             usuario = User.objects.get(pk=usuario_id)
             usuario.groups.remove(group)
             messages.success(request, f'Grupo de {usuario.username} alterado para {group.name}.')
-            return HttpResponseRedirect('/lista_usuarios')
+            return HttpResponseRedirect('/internos')
 
         elif action == 'change_group':
 
@@ -265,17 +265,17 @@ def lista_usuarios(request):
             usuario = User.objects.get(pk=usuario_id)
             usuario.groups.add(group)
             messages.success(request, f'Grupo de {usuario.username} alterado para {group.name}.')
-            return HttpResponseRedirect('/lista_usuarios')
+            return HttpResponseRedirect('/internos')
         
         elif action == 'delete_usuario':
 
             if request.user.is_superuser:
                 usuario = User.objects.get(pk=usuario_id)
                 usuario.delete()
-                return HttpResponseRedirect('/lista_usuarios')
+                return HttpResponseRedirect('/internos')
             else:
                 messages.error(request, "Você não tem permissão para excluir usuários.")
-                return HttpResponseRedirect('/lista_usuarios')
+                return HttpResponseRedirect('/internos')
 
         
         elif action == 'reset_password':
@@ -283,7 +283,7 @@ def lista_usuarios(request):
             usuario = User.objects.get(pk=usuario_id)
             send_password_reset_email(request, usuario)
             messages.success(request, f'E-mail de redefinição de senha enviado para {usuario.username}.')
-            return HttpResponseRedirect('/lista_usuarios')
+            return HttpResponseRedirect('/internos')
 
     groups = Group.objects.all()
     return render(request, 'internos/lista_usuarios.html', {'usuarios': usuarios, 'groups': groups})
