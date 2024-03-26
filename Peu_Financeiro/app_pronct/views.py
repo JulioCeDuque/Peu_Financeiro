@@ -26,6 +26,13 @@ from django.utils import timezone
 # Create your views here.
 @login_required(login_url=('/')) 
 def cadastro(request):
+
+    user_belongs_to_group = request.user.groups.filter(name='ADM').exists() | request.user.is_superuser
+
+    if not user_belongs_to_group:
+        messages.error(request, "Você não tem permissão para acessar a página Cadastro.")
+        return redirect('/home')
+    
     if request.method == "GET":
         return render(request, 'internos/cadastro.html')
     else:
@@ -241,7 +248,7 @@ def lista_usuarios(request):
 
     if not user_belongs_to_group:
         messages.error(request, "Você não tem permissão para acessar a página Usuarios.")
-        return redirect('home')
+        return redirect('/home')
 
     usuarios = User.objects.all()
 
