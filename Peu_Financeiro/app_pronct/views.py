@@ -8,12 +8,9 @@ from django.core.exceptions import ValidationError
 from django.template import loader
 from .models import clientes, CadastroFinanceiro
 from django.http import JsonResponse
-from django.contrib import messages
-from datetime import datetime
-from django.db.models import Sum
-from django.http import HttpResponse
-from .models import clientes, CadastroFinanceiro
-from django.core.mail import send_mail
+from datetime import datetime, date, timedelta
+from django.db.models import Sum, Count
+from django.core.mail import send_mail, EmailMultiAlternatives
 from django.template.loader import render_to_string
 from django.utils.html import strip_tags
 from django.contrib.auth.tokens import default_token_generator
@@ -21,19 +18,6 @@ from django.contrib.sites.shortcuts import get_current_site
 from django.utils.http import urlsafe_base64_encode
 from django.utils.encoding import force_bytes
 from django.urls import reverse
-from django.core.mail import EmailMultiAlternatives
-
-
-
-
-from django.db.models import Count
-from django.http import JsonResponse
-from .models import CadastroFinanceiro
-from datetime import datetime, date
-from django.db.models import Count
-from django.http import JsonResponse
-from .models import CadastroFinanceiro
-from datetime import datetime, timedelta
 from django.utils import timezone
 
 
@@ -59,6 +43,8 @@ def cadastro(request):
         
         
         return HttpResponse('CadastroEfetuado')
+    
+#####################################################################################################################
 
 def login(request):
     if request.method == "GET":
@@ -80,7 +66,8 @@ def login(request):
             messages.error(request, 'Nome de usuário ou senha incorretos.')
             # Redirecionar de volta para a mesma página
             return redirect('/')
-            
+
+#####################################################################################################################
    
 @login_required(login_url=('/'))    
 def plataforma(request):
@@ -135,8 +122,7 @@ def dados_do_grafico(request):
     # Converte os dados para o formato JSON e retorna como uma resposta JSON
     return JsonResponse(list(dados_semana), safe=False)
     
-    
-    
+#####################################################################################################################
     
 def filtro_datas_departamento(request):
      
@@ -160,12 +146,14 @@ def filtro_datas_departamento(request):
 
     return render(request, 'internos/plataforma.html', {'departamentos': departamentos})
     
-    
+#####################################################################################################################
 
 def auth_logout(request):
     logout(request)
     # Redirecione para a página inicial, por exemplo
     return HttpResponseRedirect('/')
+
+#####################################################################################################################
 
 def verificar_cpf(request):
     # Verifica se a requisição é do tipo POST e se é uma requisição AJAX
@@ -178,6 +166,8 @@ def verificar_cpf(request):
             return JsonResponse({'exists': True})
     # Se o CPF não existe, retorna um JSON indicando sua não existência
     return JsonResponse({'exists': False})
+
+#####################################################################################################################
 
 @login_required(login_url='/')
 def cadastro_externo(request):
@@ -203,7 +193,6 @@ def cadastro_externo(request):
             cliente.cidade = request.POST.get('cidade')
             cliente.estado = request.POST.get('estado')
             cliente.telefone_principal = request.POST.get('telefone_principal')
-            # cliente.celular = request.POST.get('celular')
             cliente.email = request.POST.get('email')
             # Salva o novo cliente no banco de dados
             cliente.save()
@@ -217,10 +206,7 @@ def cadastro_externo(request):
     # Renderiza a página de cadastro com os dados dos clientes e a mensagem de erro, se houver
     return render(request, 'internos/cadastro_externo.html', clientes_data)
 
-
-# @login_required(login_url=('/'))   
-# def cadastro_financeiro(request):
-#     return render(request, 'internos/cadastro_financeiro.html')
+#####################################################################################################################
 
 @login_required(login_url='/')
 def cadastro_financeiro(request):
@@ -234,34 +220,20 @@ def cadastro_financeiro(request):
            cadastro.cliente = cliente
            # Preenche os campos do cadastro financeiro com os dados do formulário
            cadastro.cpf = request.POST.get('cpf')
-        #    cadastro.servico = request.POST.get('servico')
-        #    cadastro.solicitante = request.POST.get('solicitante')
            cadastro.valor = request.POST.get('valor')
            cadastro.data_pagamento = request.POST.get('data_pagamento')
            cadastro.forma_pagamento = request.POST.get('forma_pagamento')
            cadastro.chave_seguranca = request.POST.get('chave_seguranca')
            cadastro.departamento = request.POST.get('departamento')
            cadastro.descricao = request.POST.get('descricao')
-        #    cadastro.nivel = request.POST.get('nivel')
-        #    cadastro.subarea = request.POST.get('subarea')
            cadastro.save()
            # Redireciona para uma página de sucesso ou faça o que for necessário
        else:
            return HttpResponse('Cliente não encontrado.')
    # Se o método da requisição não for POST, apenas renderize o template
    return render(request, 'internos/cadastro_financeiro.html')
-#
 
-# @login_required(login_url=('/'))   
-# def lista_usuarios(request):
-#     usuarios = User.objects.all()
-#     if request.method == 'POST':
-#         usuario_id = request.POST.get('usuario_id')
-#         usuario = User.objects.get(pk=usuario_id)
-#         usuario.delete()
-#         return HttpResponseRedirect('/lista_usuarios')
-#     return render(request, 'internos/lista_usuarios.html', {'usuarios': usuarios})
-
+#####################################################################################################################
 
 @login_required(login_url=('/'))   
 def lista_clientes(request):
@@ -270,6 +242,7 @@ def lista_clientes(request):
     }
     return render(request, 'internos/lista_clientes.html', cliente)
 
+#####################################################################################################################
 
 def servicos_cliente(request, cpf):
 
@@ -279,33 +252,11 @@ def servicos_cliente(request, cpf):
    
    return render(request, 'internos/servicos.html', {'servicos': servicos, 'cliente': cliente})
 
-# def change_user_group(request, user_id):
-#     user = User.objects.get(pk=user_id)
-
-#     if request.method == 'POST':
-#         group_id = request.POST.get('group')
-#         group = Group.objects.get(pk=group_id)
-#         user.groups.set([group])
-#         messages.success(request, f'Grupo de {user.username} alterado para {group.name}.')
-#         return render(request, 'internos/lista_usuarios.html')  # Redirecionar para a lista de usuários no admin
-
-#     groups = Group.objects.all()
-#     return render(request, 'change_user_group.html', {'user': user, 'groups': groups})
+#####################################################################################################################
 
 @login_required(login_url=('/'))
-# def lista_usuarios(request):
-#     user_belongs_to_group = request.user.groups.filter(name='ADM').exists()     #
-#                                                                                    #
-#     if not user_belongs_to_group:                                                  #     Função para travar a pagina para certos grupos
-#         return HttpResponse("Você não tem permissão para acessar esta página.")    #
-#     usuarios = User.objects.all()  
-# #
-
-
-
-    
 def lista_usuarios(request):
-    user_belongs_to_group = request.user.groups.filter(name='ADM').exists()
+    user_belongs_to_group = request.user.groups.filter(name='ADM').exists() | request.user.is_superuser
 
     if not user_belongs_to_group:
         messages.error(request, "Você não tem permissão para acessar a página Usuarios.")
@@ -318,9 +269,6 @@ def lista_usuarios(request):
         action = request.POST.get('action')
 
         if action == 'delete':
-            # usuario = User.objects.get(pk=usuario_id)
-            # usuario.delete()
-            # return HttpResponseRedirect('/lista_usuarios')
         
             group_id = request.POST.get('group')
             group = Group.objects.get(pk=group_id)
@@ -330,6 +278,7 @@ def lista_usuarios(request):
             return HttpResponseRedirect('/lista_usuarios')
 
         elif action == 'change_group':
+
             group_id = request.POST.get('group')
             group = Group.objects.get(pk=group_id)
             usuario = User.objects.get(pk=usuario_id)
@@ -338,11 +287,13 @@ def lista_usuarios(request):
             return HttpResponseRedirect('/lista_usuarios')
         
         elif action == 'delete_usuario':
+
             usuario = User.objects.get(pk=usuario_id)
             usuario.delete()
             return HttpResponseRedirect('/lista_usuarios')
         
         elif action == 'reset_password':
+
             usuario = User.objects.get(pk=usuario_id)
             send_password_reset_email(request, usuario)
             messages.success(request, f'E-mail de redefinição de senha enviado para {usuario.username}.')
@@ -351,7 +302,7 @@ def lista_usuarios(request):
     groups = Group.objects.all()
     return render(request, 'internos/lista_usuarios.html', {'usuarios': usuarios, 'groups': groups})
 
-
+#####################################################################################################################
 
 def send_password_reset_email(request, usuario):
     token_generator = default_token_generator
@@ -373,21 +324,7 @@ def send_password_reset_email(request, usuario):
     email.attach_alternative(html_email, "text/html")
     email.send()
 
-# def servicos_cliente(request, cpf):
-#     # Obtém o cliente com o CPF fornecido
-#     cliente = clientes.objects.get(cpf=cpf)
-    
-#     # Obtém todos os serviços relacionados a esse cliente
-#     servicos = CadastroFinanceiro.objects.filter(cpf=cliente.cpf)
-#     return render(request, 'internos/servicos.html', {'servicos': servicos, 'cliente': cliente})
-
-
-# @login_required(login_url=('/'))   
-# def teste_cliente(request):
-#     projeto = {
-#         'projeto': CadastroFinanceiro.objects.all()
-#     }
-#     return render(request, 'internos/teste_cliente.html', projeto)
+#####################################################################################################################
 
 @login_required(login_url=('/'))
 def teste_cliente(request):
@@ -405,14 +342,7 @@ def teste_cliente(request):
         }
     return render(request, 'internos/teste_cliente.html', projeto)
 
-# def informacoes_gerais(request, id):
-
-#    servicos = CadastroFinanceiro.objects.get(id=id)
-#    cliente = clientes.objects.filter(cpf=servicos.cpf)
-  
-   
-#    return render(request, 'internos/descricao.html', {'servicos': servicos, 'cliente': cliente})
-
+#####################################################################################################################
 
 @login_required(login_url=('/'))
 def informacoes_gerais(request, id):
@@ -425,7 +355,7 @@ def informacoes_gerais(request, id):
     else:
         return HttpResponse("Você não tem permissão para visualizar estas informações.")
     
-
+#####################################################################################################################
 
 @login_required(login_url=('/'))
 def exportar_dados(request):
