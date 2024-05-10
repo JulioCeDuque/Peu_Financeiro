@@ -20,7 +20,7 @@ class clientes(models.Model):
     bairro = models.TextField(max_length=36)
     cidade = models.TextField(max_length=36)
     estado = models.TextField(max_length=36)
-    telefone_principal = models.CharField(max_length=14)
+    telefone_principal = models.CharField(max_length=16)
     # celular = models.CharField(max_length=14)
     email = models.TextField(max_length=100)
     
