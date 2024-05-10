@@ -14,6 +14,7 @@ urlpatterns = [
     path('cadastro_externo/', views.cadastro_externo, name='cadastro_externo'),
     path('internos/', views.lista_usuarios, name='lista_usuarios'),
     path('cadastro_financeiro/', views.cadastro_financeiro, name='cadastro_financeiro'),
+    path('verificar_cliente/', views.verificar_cliente, name='verificar_cliente'),
     # path('lista_clientes/', views.lista_clientes, name='lista_clientes'),
     path('verificar_cpf/', views.verificar_cpf, name='verificar_cpf'),
     # path('lista_clientes/<str:cpf>/servicos/', views.servicos_cliente, name='servicos_cliente'),

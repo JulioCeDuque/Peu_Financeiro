@@ -22,7 +22,6 @@ from django.utils import timezone
 
 
 
-
 # Create your views here.
 @login_required(login_url=('/')) 
 def cadastro(request):
@@ -199,27 +198,49 @@ def cadastro_externo(request):
 
 @login_required(login_url='/')
 def cadastro_financeiro(request):
-   if request.method == 'POST':
-       cpf = request.POST.get('cpf')
+    if request.method == 'POST':
+        cpf = request.POST.get('cpf')
 
-       if clientes.objects.filter(cpf=cpf).exists():
-           cliente = clientes.objects.get(cpf=cpf)
+        if clientes.objects.filter(cpf=cpf).exists():
+            cliente = clientes.objects.get(cpf=cpf)
 
-           cadastro = CadastroFinanceiro()
-           cadastro.cliente = cliente
-           cadastro.cpf = request.POST.get('cpf')
-           cadastro.valor = request.POST.get('valor')
-           cadastro.data_pagamento = request.POST.get('data_pagamento')
-           cadastro.forma_pagamento = request.POST.get('forma_pagamento')
-           cadastro.chave_seguranca = request.POST.get('chave_seguranca')
-           cadastro.departamento = request.POST.get('departamento')
-           cadastro.descricao = request.POST.get('descricao')
-           cadastro.save()
+            cadastro = CadastroFinanceiro()
+            cadastro.cliente = cliente
+            cadastro.cpf = request.POST.get('cpf')
+            cadastro.valor = request.POST.get('valor')
+            cadastro.data_pagamento = request.POST.get('data_pagamento')
+            cadastro.forma_pagamento = request.POST.get('forma_pagamento')
+            cadastro.chave_seguranca = request.POST.get('chave_seguranca')
+            cadastro.departamento = request.POST.get('departamento')
+            cadastro.descricao = request.POST.get('descricao')
+            cadastro.save()
 
-       else:
-           return HttpResponse('Cliente não encontrado.')
+            return JsonResponse({'status': 'Success'})
+
+        else:
+            return JsonResponse({'status': 'Error', 'message': 'Cliente não encontrado.'})
+
        
-   return render(request, 'internos/cadastro_financeiro.html')
+    return render(request, 'internos/cadastro_financeiro.html')
+
+def verificar_cliente(request):
+    cpf = request.GET.get('cpf', None)
+
+    data = {
+        'cliente_existe': False,
+        'nome_cliente': None,
+        'mensagem': ''
+    }
+
+    if cpf:
+        if clientes.objects.filter(cpf=cpf).exists():
+            cliente = clientes.objects.get(cpf=cpf)
+            data['cliente_existe'] = True
+            data['nome_cliente'] = cliente.nome
+        else:
+            data['mensagem'] = 'Não encontrado no sistema.'
+
+    return JsonResponse(data)
 
 #####################################################################################################################
 
@@ -319,23 +340,53 @@ def send_password_reset_email(request, usuario):
 
 #####################################################################################################################
 
-@login_required(login_url=('/'))
-def teste_cliente(request):
-    if request.user.groups.filter(name='ADM').exists() | request.user.groups.filter(name='Secretaria').exists():
+# @login_required(login_url=('/'))
+# def teste_cliente(request):
+#     if request.user.groups.filter(name='ADM').exists() | request.user.groups.filter(name='Secretaria').exists():
     
-        projeto = {
-            'projeto': CadastroFinanceiro.objects.all()
-        }
+#         projeto = {
+#             'projeto': CadastroFinanceiro.objects.all()
+#         }
+
+#     else:
+
+#         grupos_do_usuario = request.user.groups.all()
+#         departamentos_do_usuario = [grupo.name for grupo in grupos_do_usuario]
+#         projeto = {
+#             'projeto': CadastroFinanceiro.objects.filter(departamento__in=departamentos_do_usuario)
+#         }
+
+#     return render(request, 'internos/teste_cliente.html', projeto)
+
+#     @login_required(login_url=('/'))
+
+def teste_cliente(request):
+    is_admin = request.user.groups.filter(name='ADM').exists() or request.user.groups.filter(name='Secretaria').exists()
+    
+    if is_admin:
+        if is_admin:
+            projeto = CadastroFinanceiro.objects.all()
+            contexto = {
+                'projeto': projeto,
+                'is_admin': is_admin
+            }
+
+        if request.method == 'POST' and 'projeto_id' in request.POST:
+            projeto_id = request.POST['projeto_id']
+            projeto_a_excluir = get_object_or_404(CadastroFinanceiro, pk=projeto_id)
+            projeto_a_excluir.delete()
+            # Redireciona para a mesma página após a exclusão
+            return redirect('/relatorios')
 
     else:
 
         grupos_do_usuario = request.user.groups.all()
         departamentos_do_usuario = [grupo.name for grupo in grupos_do_usuario]
-        projeto = {
+        contexto = {
             'projeto': CadastroFinanceiro.objects.filter(departamento__in=departamentos_do_usuario)
         }
 
-    return render(request, 'internos/teste_cliente.html', projeto)
+    return render(request, 'internos/teste_cliente.html', contexto)
 
 #####################################################################################################################
 
@@ -376,10 +427,11 @@ def exportar_dados(request):
                 departamentos_do_usuario = [grupo.name for grupo in grupos_do_usuario]
                 dados_filtrados = CadastroFinanceiro.objects.filter(data_pagamento__range=(data_inicio, data_fim), departamento__in=departamentos_do_usuario)
 
-            csv_content = "CPF,Nome,CEP,Endereço,Número,Complemento,Bairro,Cidade,Estado,Telefone principal,E-mail,Valor,Data Pagamento,Forma Pagamento,Chave Segurança,Departamento\n"
+            csv_content = "CPF;Nome;CEP;Endereço;Número;Complemento;Bairro;Cidade;Estado;Telefone principal;E-mail;Valor;Data Pagamento;Forma Pagamento;Chave Segurança;Departamento\n"
             for dado in dados_filtrados:
                 cliente = clientes.objects.get(cpf=dado.cpf)
-                csv_content += f"{cliente.cpf},{cliente.nome},{cliente.cep},{cliente.endereco},{cliente.numero},{cliente.complemento},{cliente.bairro},{cliente.cidade},{cliente.estado},{cliente.telefone_principal},{cliente.email},{dado.valor},{dado.data_pagamento},{dado.forma_pagamento},{dado.chave_seguranca},{dado.departamento}\n"
+                data_pagamento_formatada = dado.data_pagamento.strftime('%d/%m/%Y')
+                csv_content += f"{cliente.cpf};{cliente.nome};{cliente.cep};{cliente.endereco};{cliente.numero};{cliente.complemento};{cliente.bairro};{cliente.cidade};{cliente.estado};{cliente.telefone_principal};{cliente.email};{dado.valor};{data_pagamento_formatada};{dado.forma_pagamento};{dado.chave_seguranca};{dado.departamento}\n"
 
             response = HttpResponse(content_type='text/csv')
             response['Content-Disposition'] = 'attachment; filename="dados_exportados.csv"'

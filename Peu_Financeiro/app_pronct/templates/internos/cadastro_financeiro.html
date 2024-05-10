@@ -78,6 +78,21 @@
         text-align: center;
         padding-bottom: 15px;
     }
+
+    .cliente-box {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+    }
+    
+    .error_div {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        color: red;
+    }
     
 </style>
 </head>
@@ -93,14 +108,13 @@
                 <label for="cpf">CPF</label>
                 <input type="text" id="cpf" name="cpf" placeholder="CPF" required>
             </div>
-            <!-- <div class="form-group">
-                <label for="servico">Serviço</label>
-                <input type="text" id="servico" name="servico" value="Informe o Serviço">
-            </div>
             <div class="form-group">
-                <label for="solicitante">Solicitante</label>
-                <input type="text" id="solicitante" name="solicitante" value="Informe o Solicitante">
-            </div> -->
+                <label for="cpf">Nome</label>
+                <div id="box_cliente" class="cliente-box">
+                    <span id="nome_cliente"></span>
+                </div>
+                <div id="mensagem_erro" class="error_div" style="display: none;"></div>
+            </div>
             <div class="form-group">
                 <label for="valor">Valor R$:</label>
                 <input type="text" id="valor" name="valor" placeholder="Informe o valor" required>
@@ -139,33 +153,6 @@
                 <label for="descricao">Descrição do serviço.</label>
                 <input type="text" id="descricao" name="descricao" placeholder="Informe a descrição do serviço.">
             </div>
-            <!-- <div class="form-group">
-                <label for="nivel">Nível</label>
-                <select id="nivel" name="nivel">
-                    <option value="Graduação">Graduação</option>
-                    <option value="Pós-graduação">Pós-graduação</option>
-                </select>
-            </div>
-            <div class="form-group">
-                <label for="subarea">Subárea</label>
-                <select id="subarea" name="subarea">
-                    <option value="Cirurgia">Cirurgia</option>
-                    <option value="Dentística">Dentística</option>
-                    <option value="Estomatologia">Estomatologia</option>
-                    <option value="Endodontia">Endodontia</option>
-                    <option value="Implantodontia">Implantodontia</option>
-                    <option value="Odontopediatria">Odontopediatria</option>
-                    <option value="Ortodontia">Ortodontia</option>
-                    <option value="Periodontia">Periodontia</option>
-                    <option value="Prótese Fixa">Prótese Fixa</option>
-                    <option value="Prótese Removível">Prótese Removível</option>
-                    <option value="Radiologia">Radiologia</option>
-                    <option value="Clínica Integrada">Clínica Integrada</option>
-                    <option value="Geriatria">Geriatria</option>
-                    <option value="Patologia">Patologia</option>
-                    <option value="Clínica Car">Clínica Car</option>
-                </select>
-            </div> -->
             <div class="form-group">
                 <input type="submit" value="Cadastrar">
             </div>
@@ -198,6 +185,32 @@
                 }
             })
             .catch(error => console.error('Erro ao cadastrar:', error));
+        });
+    </script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            $('#cpf').keyup(function() {
+                var cpf = $(this).val();
+
+                $.ajax({
+                    url: '/verificar_cliente/',
+                    data: {
+                        'cpf': cpf
+                    },
+                    dataType: 'json',
+                    success: function(data) {
+                        if (data.cliente_existe) {
+                            $('#nome_cliente').text(data.nome_cliente);
+                            $('#box_cliente').show();
+                            $('#mensagem_erro').hide();
+                        } else {
+                            $('#box_cliente').hide();
+                            $('#mensagem_erro').text(data.mensagem).show();
+                        }
+                    }
+                });
+            });
         });
     </script>
 </body>

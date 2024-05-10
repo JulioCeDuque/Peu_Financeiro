@@ -111,6 +111,27 @@
         
     }
 
+    .sort-arrow {
+        display: inline-block;
+        width: 0;
+        height: 0;
+        border-left: 5px solid transparent;
+        border-right: 5px solid transparent;
+        border-bottom: 5px solid #555;
+        margin-left: 5px;
+        vertical-align: middle;
+    }
+
+    .sort-arrow.asc {
+        border-bottom: none;
+        border-top: 5px solid #555;
+    }
+
+    .sort-arrow.desc {
+        border-top: none;
+        border-bottom: 5px solid #555;
+    }
+
 </style>
 
 <h2>Informações Clientes</h2>
@@ -133,12 +154,20 @@
     <div class="content">
         <table id="dataTable">
             <tr>
-                <th onclick="sortTable(0)">Data Pagamento</th>
+                <th onclick="sortTable(0)">Data Pagamento <span class="sort-arrow"></span> </th>
+                <th onclick="sortTable(1)">CPF <span class="sort-arrow"></span> </th>
+                <th onclick="sortTable(2)">Valor <span class="sort-arrow"></span> </th>
+                <th onclick="sortTable(3)">Forma de Pagamento <span class="sort-arrow"></span> </th>
+                <th onclick="sortTable(4)">Projeto <span class="sort-arrow"></span> </th>
+                <!-- <th onclick="sortTable(0)">Data Pagamento</th>
                 <th onclick="sortTable(1)">CPF</th>
                 <th onclick="sortTable(2)">Valor</th>
                 <th onclick="sortTable(3)">Forma de Pagamento</th>
-                <th onclick="sortTable(4)">Projeto</th>
+                <th onclick="sortTable(4)">Projeto</th> -->
                 <th>Decrições Detalhadas</th>
+                {% if is_admin %}
+                <th>Excluir Relatorio</th>
+                {% endif %}
             </tr>
             {% for projetos in projeto %}
             <tr>
@@ -151,6 +180,13 @@
                     {% csrf_token %}
                     <button type="submit">Ver Descrições</button>
                 </form></td>
+                {% if is_admin %}
+                <td><form method="post">
+                    {% csrf_token %}
+                    <input type="hidden" name="projeto_id" value="{{ projetos.id }}">
+                    <button type="submit" name="projeto_id" value="{{ projetos.id }}">Excluir</button>
+                </form></td>
+                {% endif %}
             </tr>
             {% endfor %}
         </table>
@@ -233,64 +269,116 @@ function showPage(pageNumber, rowsPerPage, rows) {
 
 setupPagination();
 
-function sortTable(columnIndex) {
+// function sortTable(columnIndex) {
+//         var table, rows, switching, i, x, y, shouldSwitch;
+//         table = document.getElementById("dataTable");
+//         switching = true;
+//         var asc = table.getAttribute('data-sort-order') === 'asc'; // Obtém a ordem atual de classificação
+
+//         // Alterna a ordem de classificação
+//         asc = !asc;
+//         table.setAttribute('data-sort-order', asc ? 'asc' : 'desc');
+
+//         while (switching) {
+//             switching = false;
+//             rows = table.rows;
+
+//             for (i = 1; i < (rows.length - 1); i++) {
+//                 shouldSwitch = false;
+//                 x = rows[i].getElementsByTagName("td")[columnIndex];
+//                 y = rows[i + 1].getElementsByTagName("td")[columnIndex];
+
+//                 // Convertendo o valor para comparar corretamente, especialmente para datas
+//                 var xValue = x.innerText || x.textContent;
+//                 var yValue = y.innerText || y.textContent;
+
+//                 // Se for a coluna da data, converta para um formato que possa ser comparado
+//                 if (columnIndex === 0) {
+//                     var xDate = new Date(xValue.split('/').reverse().join('-'));
+//                     var yDate = new Date(yValue.split('/').reverse().join('-'));
+//                     if (asc) {
+//                         if (xDate > yDate) {
+//                             shouldSwitch = true;
+//                             break;
+//                         }
+//                     } else {
+//                         if (xDate < yDate) {
+//                             shouldSwitch = true;
+//                             break;
+//                         }
+//                     }
+//                 } else {
+//                     if (asc) {
+//                         if (xValue.toLowerCase() > yValue.toLowerCase()) {
+//                             shouldSwitch = true;
+//                             break;
+//                         }
+//                     } else {
+//                         if (xValue.toLowerCase() < yValue.toLowerCase()) {
+//                             shouldSwitch = true;
+//                             break;
+//                         }
+//                     }
+//                 }
+//             }
+//             if (shouldSwitch) {
+//                 rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
+//                 switching = true;
+//             }
+//         }
+// }
+    function sortTable(columnIndex) {
         var table, rows, switching, i, x, y, shouldSwitch;
         table = document.getElementById("dataTable");
         switching = true;
-        var asc = table.getAttribute('data-sort-order') === 'asc'; // Obtém a ordem atual de classificação
+        var asc = table.getAttribute('data-sort-order') === 'asc'; 
 
-        // Alterna a ordem de classificação
         asc = !asc;
         table.setAttribute('data-sort-order', asc ? 'asc' : 'desc');
 
+        var sortArrows = document.querySelectorAll('.sort-arrow');
+        sortArrows.forEach(function(arrow) {
+            arrow.classList.remove('asc', 'desc');
+        });
+
+        var arrow = table.rows[0].cells[columnIndex].querySelector('.sort-arrow');
+        arrow.classList.add(asc ? 'asc' : 'desc');
+
+        rows = table.rows;
+        var shouldSwitch = true;
+
         while (switching) {
             switching = false;
-            rows = table.rows;
 
             for (i = 1; i < (rows.length - 1); i++) {
                 shouldSwitch = false;
+
                 x = rows[i].getElementsByTagName("td")[columnIndex];
                 y = rows[i + 1].getElementsByTagName("td")[columnIndex];
 
-                // Convertendo o valor para comparar corretamente, especialmente para datas
-                var xValue = x.innerText || x.textContent;
-                var yValue = y.innerText || y.textContent;
+                var xValue = x.textContent || x.innerText;
+                var yValue = y.textContent || y.innerText;
 
-                // Se for a coluna da data, converta para um formato que possa ser comparado
-                if (columnIndex === 0) {
-                    var xDate = new Date(xValue.split('/').reverse().join('-'));
-                    var yDate = new Date(yValue.split('/').reverse().join('-'));
-                    if (asc) {
-                        if (xDate > yDate) {
-                            shouldSwitch = true;
-                            break;
-                        }
-                    } else {
-                        if (xDate < yDate) {
-                            shouldSwitch = true;
-                            break;
-                        }
+                if (asc) {
+                    if (xValue.toLowerCase() > yValue.toLowerCase()) {
+                        shouldSwitch = true;
+                        break;
                     }
                 } else {
-                    if (asc) {
-                        if (xValue.toLowerCase() > yValue.toLowerCase()) {
-                            shouldSwitch = true;
-                            break;
-                        }
-                    } else {
-                        if (xValue.toLowerCase() < yValue.toLowerCase()) {
-                            shouldSwitch = true;
-                            break;
-                        }
+                    if (xValue.toLowerCase() < yValue.toLowerCase()) {
+                        shouldSwitch = true;
+                        break;
                     }
                 }
             }
+
             if (shouldSwitch) {
                 rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
                 switching = true;
             }
         }
-}
+    } 
+      
 
 </script>
 {% endblock %}
