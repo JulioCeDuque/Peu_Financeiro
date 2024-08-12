@@ -163,16 +163,12 @@ def verificar_cpf(request):
 
 @login_required(login_url='/')
 def cadastro_externo(request):
-    mensagem_erro = None
-
     if request.method == 'POST':
         cpf = request.POST.get('cpf')
         
         if clientes.objects.filter(cpf=cpf).exists():
-            
-            mensagem_erro = 'Este CPF já está em uso.'
+            return JsonResponse({'success': False, 'mensagem_erro': 'Este CPF já está em uso.'})
         else:
-           
             cliente = clientes()
             cliente.cpf = cpf
             cliente.nome = request.POST.get('nome')
@@ -186,12 +182,11 @@ def cadastro_externo(request):
             cliente.telefone_principal = request.POST.get('telefone_principal')
             cliente.email = request.POST.get('email')
             cliente.save()
+            return JsonResponse({'success': True})
 
     clientes_data = {
         'clientes': clientes.objects.all(),
-        'mensagem_erro': mensagem_erro  
     }
-
     return render(request, 'internos/cadastro_externo.html', clientes_data)
 
 #####################################################################################################################
@@ -246,10 +241,45 @@ def verificar_cliente(request):
 
 @login_required(login_url=('/'))   
 def lista_clientes(request):
+    is_admin = request.user.groups.filter(name='ADM').exists() or request.user.groups.filter(name='Secretaria').exists()
+
     cliente = {
-        'cliente': clientes.objects.all()
+        'cliente': clientes.objects.all(),
+        'is_admin' : is_admin
     }
     return render(request, 'internos/lista_clientes.html', cliente)
+
+#####################################################################################################################
+
+@login_required(login_url='/')
+def editar_cliente(request, id):
+    # Buscar o cliente pelo ID ou retornar 404 se não encontrado
+    cliente = get_object_or_404(clientes, id=id)
+    mensagem_erro = None
+    
+
+    if request.method == 'POST':
+        # Atualizar os dados do cliente com os dados do formulário
+        cliente.nome = request.POST.get('nome')
+        cliente.cep = request.POST.get('cep')
+        cliente.endereco = request.POST.get('endereco')
+        cliente.numero = request.POST.get('numero')
+        cliente.complemento = request.POST.get('complemento')
+        cliente.bairro = request.POST.get('bairro')
+        cliente.cidade = request.POST.get('cidade')
+        cliente.estado = request.POST.get('estado')
+        cliente.telefone_principal = request.POST.get('telefone_principal')
+        cliente.email = request.POST.get('email')
+        cliente.save()
+            
+    
+    # Passar o cliente e mensagem de erro para o template
+    clientes_data = {
+        'cliente': cliente,
+        'mensagem_erro': mensagem_erro
+    }
+
+    return render(request, 'internos/editar_cliente.html', clientes_data)
 
 #####################################################################################################################
 
@@ -375,7 +405,20 @@ def teste_cliente(request):
             projeto_id = request.POST['projeto_id']
             projeto_a_excluir = get_object_or_404(CadastroFinanceiro, pk=projeto_id)
             projeto_a_excluir.delete()
-            # Redireciona para a mesma página após a exclusão
+            return redirect('/relatorios')
+
+        if request.method == 'POST' and 'projeto_pago' in request.POST:
+            projeto_pago = request.POST['projeto_pago']
+            projota = CadastroFinanceiro.objects.get(pk=projeto_pago)
+            projota.pago = True
+            projota.save()
+            return redirect('/relatorios')
+
+        if request.method == 'POST' and 'projeto_despago' in request.POST:
+            projeto_despago = request.POST['projeto_despago']
+            ta_despago = CadastroFinanceiro.objects.get(pk=projeto_despago)
+            ta_despago.pago = False
+            ta_despago.save()
             return redirect('/relatorios')
 
     else:

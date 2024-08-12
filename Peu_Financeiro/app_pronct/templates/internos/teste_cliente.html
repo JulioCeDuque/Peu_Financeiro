@@ -148,6 +148,7 @@
             <!-- Adicionar Botão de Exportação -->
             <button type="submit" name="action" value="exportar">Exportar Dados</button>
         </form>
+            <button style="margin-left: 30px;" onclick="window.location.href='{% url 'lista_clientes' %}'">Lista de Clientes</button>
     </div>
     <input type="text" id="searchInput" placeholder="Pesquisar Cliente" class="rounded-input">
 <div class="container">
@@ -159,6 +160,7 @@
                 <th onclick="sortTable(2)">Valor <span class="sort-arrow"></span> </th>
                 <th onclick="sortTable(3)">Forma de Pagamento <span class="sort-arrow"></span> </th>
                 <th onclick="sortTable(4)">Projeto <span class="sort-arrow"></span> </th>
+                <th onclick="sortTable(5)">Status do Pagamento <span class="sort-arrow"></span> </th>
                 <!-- <th onclick="sortTable(0)">Data Pagamento</th>
                 <th onclick="sortTable(1)">CPF</th>
                 <th onclick="sortTable(2)">Valor</th>
@@ -167,6 +169,7 @@
                 <th>Decrições Detalhadas</th>
                 {% if is_admin %}
                 <th>Excluir Relatorio</th>
+                <th>Atualizar Pagamento</th>
                 {% endif %}
             </tr>
             {% for projetos in projeto %}
@@ -176,6 +179,13 @@
                 <td class="expandido">R$ {{ projetos.valor }}</td>
                 <td>{{ projetos.forma_pagamento }}</td>
                 <td>{{ projetos.departamento }}</td>
+                <td>
+                    {% if projetos.pago %}
+                        <span style="color: green;">Pagamento Confirmado</span>
+                    {% else %}
+                        <span style="color: red;">Pagamento Pendente</span>
+                    {% endif %}
+                </td>
                 <td><form action="{% url 'informacoes_gerais' projetos.id %}" method="get">
                     {% csrf_token %}
                     <button type="submit">Ver Descrições</button>
@@ -186,6 +196,24 @@
                     <input type="hidden" name="projeto_id" value="{{ projetos.id }}">
                     <button type="submit" name="projeto_id" value="{{ projetos.id }}">Excluir</button>
                 </form></td>
+                {% endif %}
+                {% if is_admin %}
+                <td><form method="post" onsubmit="return confirmSubmit()">
+                    {% csrf_token %}
+                    <button type="submit" name="projeto_pago" value="{{ projetos.id }}" {% if projetos.pago %}disabled{% endif %}>Confirmar Pagamento</button>
+                </form>
+                <!-- <form method="post">
+                    {% csrf_token %}
+                    <button type="submit" name="projeto_despago" value="{{ projetos.id }}" style="margin: 10px;">x</button>
+                </form> -->
+                </td>
+
+                <!-- <td><form method="post">
+                    {% csrf_token %}
+                    <input type="checkbox" name="projeto_despago" value="{{ projetos.id }}">
+                    <button type="submit" name="projeto_despago" value="{{ projetos.id }}">despago</button>
+                </form></td> -->
+
                 {% endif %}
             </tr>
             {% endfor %}
@@ -198,6 +226,10 @@
 
 <script>
 // Função de pesquisa por filtro
+function confirmSubmit() {
+    return confirm("Ao clicar em OK, você estará confirmando a operação e atualizando o status deste serviço como pago. Esta operação não pode ser desfeita. Deseja confirmar a operação?");
+}
+
 function filterTable() {
     var input, filter, table, tr, td, i, txtValue;
     input = document.getElementById("searchInput");

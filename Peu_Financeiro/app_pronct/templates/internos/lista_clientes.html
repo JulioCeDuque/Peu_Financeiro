@@ -2,7 +2,138 @@
 {% block content %}
 {% load static %}
 <link rel="stylesheet" href="{% static 'sideBar/style.css' %}">
+
 <style>
+     h2,
+    th {
+        font-weight: normal;
+        text-align: center;
+    }
+    body {
+        background-color: #e4e9f7;
+        font-family: Arial, sans-serif;
+    }
+
+    .container {
+        width: 110%; 
+        height: 500px; 
+        overflow: auto; 
+        border: 1px solid #ccc; 
+        background-color: #fff;
+        
+    }
+
+    .content {
+        width: 100%;
+
+    }
+
+    .pagination {
+        width: 110%;
+        padding: 10px;
+        display: flex;
+        justify-content: center;
+        background-color: #f2f2f2;
+    }
+
+    .pagination a {
+        text-decoration: none;
+        padding: 8px 12px;
+        margin: 0 5px;
+        background-color: #35adb5;
+        color: #fff;
+        border-radius: 5px;
+        transition: background-color 0.3s;
+    }
+
+    .pagination a:hover {
+        background-color: #35adb5;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    th, td {
+        padding: 10px;
+        text-align: center;
+        border-bottom: 1px solid #ddd;
+        min-width: 100px;
+    }
+
+    th {
+        background-color: #f2f2f2;
+    }
+
+    .expandido {
+        min-width: 150px;
+    }
+
+    .rounded-input {
+        border-radius: 5px;
+        padding: 8px;
+        border: 1px solid #ccc;
+        margin-bottom: 10px;
+        width: 110%;
+    }
+    .rounded-inputt {
+        border-radius: 5px;
+        padding: 8px;
+        border: 1px solid #ccc;
+        margin-bottom: 10px;
+        width: 15%;
+    }
+
+    button {
+        padding: 8px 12px;
+        border: none;
+        background-color: #007bff;
+        color: #fff;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: background-color 0.3s;
+    }
+
+    button {
+        background-color: #35adb5;
+    }
+    .form-container {
+        margin-bottom: 20px;
+        text-align: center;
+        
+        
+    }
+
+    .form-container form {
+        display: inline-block;
+        
+    }
+
+    .sort-arrow {
+        display: inline-block;
+        width: 0;
+        height: 0;
+        border-left: 5px solid transparent;
+        border-right: 5px solid transparent;
+        border-bottom: 5px solid #555;
+        margin-left: 5px;
+        vertical-align: middle;
+    }
+
+    .sort-arrow.asc {
+        border-bottom: none;
+        border-top: 5px solid #555;
+    }
+
+    .sort-arrow.desc {
+        border-top: none;
+        border-bottom: 5px solid #555;
+    }
+
+</style>
+
+<!-- <style>
     h2,
     th {
         font-weight: normal;
@@ -38,71 +169,183 @@
     .expandido {
         min-width: 150px; /* Largura mínima expandida para CPF e CEP */
     }
-</style>
+</style> -->
 
 <h2>Informações Clientes</h2>
 <input type="text" id="searchInput" placeholder="Pesquisar Cliente" class="rounded-input">
 
-<div>
-    <table id="dataTable">
-        <tr>
-            <th>Nome Cliente</th>
-            <th>CPF</th>
-            <th>CEP</th>
-            <th>Endereço/Numero/Complemento/Bairro/Cidade/Estado</th>
-            <!--<th>Numero</th>
-            <th>Complemento</th>
-            <th>Bairro</th>
-            <th>Cidade</th>
-            <th>Estado</th>-->
-            <th>Telefone Principal</th>
-            <th>E-mail</th>
-            <th>Editar Cliente</th>
-            <th>Lista de Serviços</th>
-        </tr>
-        {% for clientes in cliente %}
-        <tr>
-            <td>{{ clientes.nome }}</td>
-            <td class="expandido">{{ clientes.cpf }}</td>
-            <td class="expandido">{{ clientes.cep }}</td>
-            <td>{{ clientes.endereco }}, Nº {{ clientes.numero }}, {{ clientes.complemento }}, {{ clientes.bairro }}, {{ clientes.cidade }}, {{ clientes.estado }}.</td>
-            <td>{{ clientes.telefone_principal }}</td>
-            <td>{{ clientes.email }}</td>
-            <td><button>Editar</button></td>
-            <td><form action="{% url 'servicos_cliente' clientes.cpf %}" method="get">
-                {% csrf_token %}
-                <button type="submit">Ver Serviços Contratados</button>
-            </form></td>
-        </tr>
-        {% endfor %}
-    </table>
+<div class="container">
+    <div class="content">
+        <table id="dataTable">
+            <tr>
+                <th onclick="sortTable(0)">Nome <span class="sort-arrow"></span> </th>
+                <th onclick="sortTable(1)">CPF <span class="sort-arrow"></span> </th>
+                <th onclick="sortTable(2)">CEP <span class="sort-arrow"></span> </th>
+                <th onclick="sortTable(3)">Logradouro <span class="sort-arrow"></span> </th>
+                <th onclick="sortTable(4)">Telefone <span class="sort-arrow"></span> </th>
+                <th onclick="sortTable(5)">E-mail <span class="sort-arrow"></span> </th>
+                <!-- <th onclick="sortTable(0)">Data Pagamento</th>
+                <th onclick="sortTable(1)">CPF</th>
+                <th onclick="sortTable(2)">Valor</th>
+                <th onclick="sortTable(3)">Forma de Pagamento</th>
+                <th onclick="sortTable(4)">Projeto</th> -->
+                {% if is_admin %}
+                    <th>Editar Cliente</th>
+                {% endif %}
+            </tr>
+            {% for clientes in cliente %}
+            <tr>
+                <td>{{ clientes.nome }}</td>
+                <td class="expandido">{{ clientes.cpf }}</td>
+                <td class="expandido">{{ clientes.cep }}</td>
+                <td>{{ clientes.endereco }}, Nº {{ clientes.numero }}, {{ clientes.complemento }}, {{ clientes.bairro }}, {{ clientes.cidade }}, {{ clientes.estado }}.</td>
+                <td>{{ clientes.telefone_principal }}</td>
+                <td>{{ clientes.email }}</td>
+                {% if is_admin %}
+                    <td><button class="editar-dados" data-url="{% url 'editar_cliente' clientes.id %}">Editar Dados</button></td>
+                {% endif %}
+            </tr>
+            {% endfor %}
+        </table>
+    </div>
 </div>
+<div class="pagination">
+</div> 
 
 <script>
-    // Função para filtrar os resultados da tabela com base no texto digitado
-    function filterTable() {
-        var input, filter, table, tr, td, i, txtValue;
-        input = document.getElementById("searchInput");
-        filter = input.value.toUpperCase();
-        table = document.getElementById("dataTable");
-        tr = table.getElementsByTagName("tr");
-        for (i = 0; i < tr.length; i++) {
-            td = tr[i].getElementsByTagName("td");
-            for (var j = 0; j < td.length; j++) {
-                if (td[j]) {
-                    txtValue = td[j].textContent || td[j].innerText;
-                    if (txtValue.toUpperCase().indexOf(filter) > -1) {
-                        tr[i].style.display = "";
-                        break;
-                    } else {
-                        tr[i].style.display = "none";
-                    }
+function filterTable() {
+    var input, filter, table, tr, td, i, txtValue;
+    input = document.getElementById("searchInput");
+    filter = input.value.toUpperCase();
+    table = document.getElementById("dataTable");
+    tr = table.getElementsByTagName("tr");
+    
+    if (filter.trim() === '') { // Verifica se o filtro está vazio
+        // Se o filtro estiver vazio, limpa o campo de busca e recarrega a paginação
+        input.value = ''; 
+        setupPagination();
+        return;
+    }
+
+    for (i = 0; i < tr.length; i++) {
+        td = tr[i].getElementsByTagName("td");
+        for (var j = 0; j < td.length; j++) {
+            if (td[j]) {
+                txtValue = td[j].textContent || td[j].innerText;
+                if (txtValue.toUpperCase().indexOf(filter) > -1) {
+                    tr[i].style.display = "";
+                    break;
+                } else {
+                    tr[i].style.display = "none";
                 }
             }
         }
     }
+}
 
-    // Adiciona um ouvinte de eventos ao campo de entrada para chamar a função de filtro quando o texto é alterado
-    document.getElementById("searchInput").addEventListener("keyup", filterTable);
+document.getElementById("searchInput").addEventListener("keyup", filterTable);
+
+// Função para paginação
+function setupPagination() {
+    var table = document.getElementById("dataTable");
+    var rowsPerPage = 200;  // Nessa linha muda o número de dados por paginação
+    var rows = table.getElementsByTagName("tr");
+    var pageCount = Math.ceil((rows.length - 1) / rowsPerPage); 
+    
+    // Adiciona os botões de páginação
+    var pagination = document.querySelector(".pagination");
+    pagination.innerHTML = "";
+    for (var i = 1; i <= pageCount; i++) {
+        var pageLink = document.createElement("a");
+        pageLink.href = "#";
+        pageLink.textContent = i;
+        pageLink.addEventListener("click", function() {
+            var pageNumber = parseInt(this.textContent);
+            showPage(pageNumber, rowsPerPage, rows);
+        });
+        pagination.appendChild(pageLink);
+    }
+    
+    showPage(1, rowsPerPage, rows);
+}
+
+// Função para exibir corretamente a página atual
+function showPage(pageNumber, rowsPerPage, rows) {
+    var start = (pageNumber - 1) * rowsPerPage + 1; 
+    var end = start + rowsPerPage - 1; 
+    for (var i = 1; i < rows.length; i++) {
+        if (i >= start && i <= end) {
+            rows[i].style.display = "";
+        } else {
+            rows[i].style.display = "none";
+        }
+    }
+}
+
+setupPagination();
+
+    function sortTable(columnIndex) {
+        var table, rows, switching, i, x, y, shouldSwitch;
+        table = document.getElementById("dataTable");
+        switching = true;
+        var asc = table.getAttribute('data-sort-order') === 'asc'; 
+
+        asc = !asc;
+        table.setAttribute('data-sort-order', asc ? 'asc' : 'desc');
+
+        var sortArrows = document.querySelectorAll('.sort-arrow');
+        sortArrows.forEach(function(arrow) {
+            arrow.classList.remove('asc', 'desc');
+        });
+
+        var arrow = table.rows[0].cells[columnIndex].querySelector('.sort-arrow');
+        arrow.classList.add(asc ? 'asc' : 'desc');
+
+        rows = table.rows;
+        var shouldSwitch = true;
+
+        while (switching) {
+            switching = false;
+
+            for (i = 1; i < (rows.length - 1); i++) {
+                shouldSwitch = false;
+
+                x = rows[i].getElementsByTagName("td")[columnIndex];
+                y = rows[i + 1].getElementsByTagName("td")[columnIndex];
+
+                var xValue = x.textContent || x.innerText;
+                var yValue = y.textContent || y.innerText;
+
+                if (asc) {
+                    if (xValue.toLowerCase() > yValue.toLowerCase()) {
+                        shouldSwitch = true;
+                        break;
+                    }
+                } else {
+                    if (xValue.toLowerCase() < yValue.toLowerCase()) {
+                        shouldSwitch = true;
+                        break;
+                    }
+                }
+            }
+
+            if (shouldSwitch) {
+                rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
+                switching = true;
+            }
+        }
+    } 
+      
+    document.addEventListener('DOMContentLoaded', function() {
+        // Selecione todos os botões com a classe 'editar-dados'
+        document.querySelectorAll('.editar-dados').forEach(button => {
+            button.addEventListener('click', function() {
+                // Obtém a URL do atributo data-url
+                var url = this.getAttribute('data-url');
+                // Redireciona para a URL
+                window.location.href = url;
+            });
+        });
+    });
 </script>
 {% endblock %}
