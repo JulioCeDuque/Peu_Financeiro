@@ -155,7 +155,7 @@
     <div class="content">
         <table id="dataTable">
             <tr>
-                <th onclick="sortTable(0)">Data Pagamento <span class="sort-arrow"></span> </th>
+                <th onclick="sortTable(0)">Data de Lançamento <span class="sort-arrow"></span> </th>
                 <th onclick="sortTable(1)">CPF <span class="sort-arrow"></span> </th>
                 <th onclick="sortTable(2)">Valor <span class="sort-arrow"></span> </th>
                 <th onclick="sortTable(3)">Forma de Pagamento <span class="sort-arrow"></span> </th>
@@ -181,9 +181,9 @@
                 <td>{{ projetos.departamento }}</td>
                 <td>
                     {% if projetos.pago %}
-                        <span style="color: green;">Pagamento Confirmado</span>
+                        <span style="color: green;">Nota Fiscal Emitida</span>
                     {% else %}
-                        <span style="color: red;">Pagamento Pendente</span>
+                        <span style="color: red;">Nota Fiscal Pendente</span>
                     {% endif %}
                 </td>
                 <td><form action="{% url 'informacoes_gerais' projetos.id %}" method="get">

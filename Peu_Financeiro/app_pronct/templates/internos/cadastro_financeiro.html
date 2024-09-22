@@ -120,7 +120,7 @@
                 <input type="text" id="valor" name="valor" placeholder="Informe o valor" required>
             </div>
             <div class="form-group">
-                <label for="data_pagamento">Data de Pagamento</label>
+                <label for="data_pagamento">Data de Lançamento</label>
                 <input type="date" id="data_pagamento" name="data_pagamento" class="rounded-input" required>
             </div>            
             <div class="form-group">
@@ -139,14 +139,9 @@
             <div class="form-group">
                 <label for="departamento">Projeto</label>
                 <select id="departamento" name="departamento">
-                    <option value="26.023 - Clínica Odontológica">26.023 - Clínica Odontológica</option>
-                    <option value="26.024 - Prótese">26.024 - Prótese</option>
-                    <option value="26.025 - Ortodontia">26.025 - Ortodontia</option>
-                    <option value="26.026 - Odontopediatria">26.026 - Odontopediatria</option>
-                    <option value="26.027 - Radiologia">26.027 - Radiologia</option>
-                    <option value="26.028 - Estomatologia">26.028 - Estomatologia</option>
-                    <option value="26.029 - Patologia Oral">26.029 - Patologia Oral</option>
-                    <option value="26.030 - Pós-graduação">26.030 - Pós-graduação</option>
+                    {% for departamento in departamentos %}
+                        <option value="{{ departamento }}">{{ departamento }}</option>
+                    {% endfor %}
                 </select>
             </div>
             <div class="form-group">

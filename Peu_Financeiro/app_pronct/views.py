@@ -193,6 +193,32 @@ def cadastro_externo(request):
 
 @login_required(login_url='/')
 def cadastro_financeiro(request):
+    usuario = request.user
+    grupos_usuario = usuario.groups.all() 
+
+    departamentos_permitidos = {
+        '26.023 - Clínica Odontológica': ['26.023 - Clínica Odontológica'],
+        '26.024 - Prótese': ['26.024 - Prótese'],
+        '26.025 - Ortodontia': ['26.025 - Ortodontia'],
+        '26.026 - Odontopediatria': ['26.026 - Odontopediatria'],
+        '26.027 - Radiologia': ['26.027 - Radiologia'],
+        '26.028 - Estomatologia': ['26.028 - Estomatologia'],
+        '26.029 - Patologia Oral': ['26.029 - Patologia Oral'],
+        '26.030 - Pós-graduação': ['26.030 - Pós-graduação'],
+        'Secretaria': ['26.023 - Clínica Odontológica', '26.024 - Prótese', '26.025 - Ortodontia', '26.026 - Odontopediatria', '26.027 - Radiologia', '26.028 - Estomatologia', '26.029 - Patologia Oral', '26.030 - Pós-graduação']
+    }
+
+    departamentos = []
+    departamento_principal = None
+
+    for grupo in grupos_usuario:
+        if grupo.name in departamentos_permitidos:
+            departamentos.extend(departamentos_permitidos[grupo.name])
+            if not departamento_principal:
+                departamento_principal = departamentos_permitidos[grupo.name][0]  
+
+    departamentos = list(set(departamentos))
+
     if request.method == 'POST':
         cpf = request.POST.get('cpf')
 
@@ -215,8 +241,8 @@ def cadastro_financeiro(request):
         else:
             return JsonResponse({'status': 'Error', 'message': 'Cliente não encontrado.'})
 
-       
-    return render(request, 'internos/cadastro_financeiro.html')
+    return render(request, 'internos/cadastro_financeiro.html', {'departamentos': departamentos, 'departamento_principal': departamento_principal})
+
 
 def verificar_cliente(request):
     cpf = request.GET.get('cpf', None)
