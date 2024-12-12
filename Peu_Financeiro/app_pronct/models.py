@@ -18,6 +18,7 @@ class clientes(models.Model):
 class CadastroFinanceiro(models.Model):
     id = models.AutoField(primary_key=True)
     cpf = models.CharField(max_length=14)
+    pagante = models.TextField(max_length=225, default='Cliente')
     valor = models.CharField(max_length=20)
     data_pagamento = models.DateField()
     forma_pagamento = models.TextField(max_length=50)

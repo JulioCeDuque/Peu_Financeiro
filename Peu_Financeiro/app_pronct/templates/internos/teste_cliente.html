@@ -363,53 +363,38 @@ setupPagination();
         var table, rows, switching, i, x, y, shouldSwitch;
         table = document.getElementById("dataTable");
         switching = true;
-        var asc = table.getAttribute('data-sort-order') === 'asc'; 
 
+        var asc = table.getAttribute('data-sort-order') === 'asc';
         asc = !asc;
         table.setAttribute('data-sort-order', asc ? 'asc' : 'desc');
 
         var sortArrows = document.querySelectorAll('.sort-arrow');
-        sortArrows.forEach(function(arrow) {
+        sortArrows.forEach(function (arrow) {
             arrow.classList.remove('asc', 'desc');
         });
 
         var arrow = table.rows[0].cells[columnIndex].querySelector('.sort-arrow');
         arrow.classList.add(asc ? 'asc' : 'desc');
 
-        rows = table.rows;
-        var shouldSwitch = true;
+        rows = Array.from(table.rows).slice(1); 
 
-        while (switching) {
-            switching = false;
+        function compareValues(a, b) {
+            var xValue = a.cells[columnIndex].textContent || a.cells[columnIndex].innerText;
+            var yValue = b.cells[columnIndex].textContent || b.cells[columnIndex].innerText;
 
-            for (i = 1; i < (rows.length - 1); i++) {
-                shouldSwitch = false;
-
-                x = rows[i].getElementsByTagName("td")[columnIndex];
-                y = rows[i + 1].getElementsByTagName("td")[columnIndex];
-
-                var xValue = x.textContent || x.innerText;
-                var yValue = y.textContent || y.innerText;
-
-                if (asc) {
-                    if (xValue.toLowerCase() > yValue.toLowerCase()) {
-                        shouldSwitch = true;
-                        break;
-                    }
-                } else {
-                    if (xValue.toLowerCase() < yValue.toLowerCase()) {
-                        shouldSwitch = true;
-                        break;
-                    }
-                }
+            if (/^\d{2}\/\d{2}\/\d{4}$/.test(xValue) && /^\d{2}\/\d{2}\/\d{4}$/.test(yValue)) {
+                var xDate = new Date(xValue.split('/').reverse().join('-'));
+                var yDate = new Date(yValue.split('/').reverse().join('-'));
+                return asc ? xDate - yDate : yDate - xDate;
             }
 
-            if (shouldSwitch) {
-                rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
-                switching = true;
-            }
+            return asc ? xValue.localeCompare(yValue) : yValue.localeCompare(xValue);
         }
-    } 
+
+        rows.sort(compareValues);
+
+        rows.forEach(row => table.tBodies[0].appendChild(row));
+    }
       
 
 </script>

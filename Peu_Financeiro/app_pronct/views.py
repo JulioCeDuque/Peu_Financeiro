@@ -16,7 +16,7 @@ from django.utils.html import strip_tags
 from django.contrib.auth.tokens import default_token_generator
 from django.contrib.sites.shortcuts import get_current_site
 from django.utils.http import urlsafe_base64_encode
-from django.utils.encoding import force_bytes
+from django.utils.encoding import force_bytes, smart_str
 from django.urls import reverse
 from django.utils import timezone
 
@@ -224,9 +224,11 @@ def cadastro_financeiro(request):
 
         if clientes.objects.filter(cpf=cpf).exists():
             cliente = clientes.objects.get(cpf=cpf)
+            pagante = request.POST.get('pagante', '').strip() or "Cliente"
 
             cadastro = CadastroFinanceiro()
             cadastro.cliente = cliente
+            cadastro.pagante = pagante
             cadastro.cpf = request.POST.get('cpf')
             cadastro.valor = request.POST.get('valor')
             cadastro.data_pagamento = request.POST.get('data_pagamento')
@@ -479,30 +481,46 @@ def exportar_dados(request):
     if request.method == 'POST' and 'action' in request.POST:
 
         if request.POST['action'] == 'exportar':
-
             data_inicio = request.POST.get('data_inicio')
             data_fim = request.POST.get('data_fim')
 
             data_inicio = datetime.strptime(data_inicio, '%Y-%m-%d')
             data_fim = datetime.strptime(data_fim, '%Y-%m-%d')
 
-            if request.user.groups.filter(name='ADM').exists() | request.user.groups.filter(name='Secretaria').exists():
-
+            if request.user.groups.filter(name='ADM').exists() or request.user.groups.filter(name='Secretaria').exists():
                 dados_filtrados = CadastroFinanceiro.objects.filter(data_pagamento__range=(data_inicio, data_fim))
-
             else:
-
                 grupos_do_usuario = request.user.groups.all()
                 departamentos_do_usuario = [grupo.name for grupo in grupos_do_usuario]
                 dados_filtrados = CadastroFinanceiro.objects.filter(data_pagamento__range=(data_inicio, data_fim), departamento__in=departamentos_do_usuario)
 
-            csv_content = "CPF;Nome;CEP;Endereço;Número;Complemento;Bairro;Cidade;Estado;Telefone principal;E-mail;Valor;Data Pagamento;Forma Pagamento;Chave Segurança;Departamento\n"
+            csv_content = "CPF;Nome;CEP;Endereço;Número;Complemento;Bairro;Cidade;Estado;Telefone principal;E-mail;Pagante;Valor;Data Pagamento;Forma Pagamento;Chave Segurança;Departamento;Descrição\n"
             for dado in dados_filtrados:
                 cliente = clientes.objects.get(cpf=dado.cpf)
                 data_pagamento_formatada = dado.data_pagamento.strftime('%d/%m/%Y')
-                csv_content += f"{cliente.cpf};{cliente.nome};{cliente.cep};{cliente.endereco};{cliente.numero};{cliente.complemento};{cliente.bairro};{cliente.cidade};{cliente.estado};{cliente.telefone_principal};{cliente.email};{dado.valor};{data_pagamento_formatada};{dado.forma_pagamento};{dado.chave_seguranca};{dado.departamento}\n"
+                
+                csv_content += ";".join([
+                    smart_str(cliente.cpf),
+                    smart_str(cliente.nome),
+                    smart_str(cliente.cep),
+                    smart_str(cliente.endereco),
+                    smart_str(cliente.numero),
+                    smart_str(cliente.complemento),
+                    smart_str(cliente.bairro),
+                    smart_str(cliente.cidade),
+                    smart_str(cliente.estado),
+                    smart_str(cliente.telefone_principal),
+                    smart_str(cliente.email),
+                    smart_str(dado.pagante),
+                    smart_str(dado.valor),
+                    smart_str(data_pagamento_formatada),
+                    smart_str(dado.forma_pagamento),
+                    smart_str(dado.chave_seguranca),
+                    smart_str(dado.departamento),
+                    smart_str(dado.descricao),
+                ]) + "\n"
 
-            response = HttpResponse(content_type='text/csv')
+            response = HttpResponse(content_type='text/csv; charset=utf-8')
             response['Content-Disposition'] = 'attachment; filename="dados_exportados.csv"'
-            response.write(csv_content)
+            response.write(csv_content.encode('utf-8'))
             return response
